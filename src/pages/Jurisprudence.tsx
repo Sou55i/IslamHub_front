@@ -38,7 +38,7 @@ export const Jurisprudence: React.FC = () => {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {['Prayer', 'Fasting', 'Zakat', 'Marriage', 'Business', 'Family'].map((topic, index) => (
+          {['Croyance','Salat', 'Jeûne', 'Zakat', 'Mariage', 'Ventes', 'Famille'].map((topic, index) => (
             <motion.div
               key={topic}
               initial={{ opacity: 0, y: 20 }}
