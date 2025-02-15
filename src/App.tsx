@@ -9,6 +9,7 @@ import { Biographies } from './pages/Biographies';
 import { Multimedia } from './pages/Multimedia';
 import { PrayerTimesPage } from './pages/PrayerTimes';
 import { ThemeProvider } from './context/ThemeContext';
+import { Croyances } from './pages/Croyances';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
               <Route path="/biographies" element={<Biographies />} />
               <Route path="/multimedia" element={<Multimedia />} />
               <Route path="/prayer-times" element={<PrayerTimesPage />} />
+              <Route path="/croyance" element={<Croyances />} />
             </Routes>
           </main>
         </div>

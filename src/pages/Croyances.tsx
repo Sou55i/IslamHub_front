@@ -1,15 +1,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Book, Search, Filter } from 'lucide-react';
-import { useHadiths } from '../context/HadithProvider';
+import { useCroyances } from '../context/CroyanceProvider';
 
-export const Hadiths: React.FC = () => {
-  const { hadiths, isLoading, error } = useHadiths(); // Utilisation du contexte
+export const Croyances: React.FC = () => {
+  const { croyances, isLoading, error } = useCroyances(); // Utilisation du contexte
 
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <p className="text-emerald-600 font-amiri">Loading hadiths...</p>
+        <p className="text-emerald-600 font-amiri">Loading croyances...</p>
       </div>
     );
   }
@@ -31,9 +31,9 @@ export const Hadiths: React.FC = () => {
       >
         <div className="absolute inset-0 bg-emerald-900/80 dark:bg-emerald-950/90 backdrop-blur-sm"></div>
         <div className="relative text-center px-4">
-          <h1 className="text-4xl font-bold text-white mb-4 font-amiri">Hadiths</h1>
+          <h1 className="text-4xl font-bold text-white mb-4 font-amiri">Croyances</h1>
           <p className="text-lg text-emerald-50 max-w-2xl mx-auto">
-            Explore the sayings and traditions of Prophet Muhammad ﷺ
+            Explore la croyance de Ahlu sounnah wal jamaa ﷺ
           </p>
         </div>
       </motion.div>
@@ -44,7 +44,7 @@ export const Hadiths: React.FC = () => {
             <div className="flex-1 relative">
               <input
                 type="text"
-                placeholder="Search hadiths..."
+                placeholder="Search croyance..."
                 className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-transparent"
               />
               <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
@@ -57,9 +57,9 @@ export const Hadiths: React.FC = () => {
         </div>
 
         <div className="grid gap-6">
-          {hadiths.map((hadith) => (
+          {croyances.map((croyance) => (
             <motion.div
-              key={hadith.id}
+              key={croyance.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
@@ -71,19 +71,32 @@ export const Hadiths: React.FC = () => {
                 </div>
                 <div className="flex-1">
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2 font-amiri">
-                    {hadith.sujet}
+                    {croyance.nom}
                   </h3>
                   <p className="text-gray-600 dark:text-gray-300 mb-4 font-amiri leading-relaxed">
-                    {hadith.raporteur}
+                    <strong>Arabe:</strong> {croyance.arabe}
                   </p>
-                  <div className="flex flex-wrap gap-2">
-                    <span className="px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 text-sm">
-                      {hadith.texte_arabe}
-                    </span>
-                    <span className="px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 text-sm">
-                      {hadith.texte_francais}
-                    </span>
-                  </div>
+                  <p className="text-gray-600 dark:text-gray-300 mb-4 font-amiri leading-relaxed">
+                    <strong>Français:</strong> {croyance.francais}
+                  </p>
+                  <p className="text-gray-600 dark:text-gray-300 mb-4 font-amiri leading-relaxed">
+                    <strong>Sujet:</strong> {croyance.sujet}
+                  </p>
+                  <p className="text-gray-600 dark:text-gray-300 mb-4 font-amiri leading-relaxed">
+                    <strong>Phonétique:</strong> {croyance.phonetique}
+                  </p>
+                  <p className="text-gray-600 dark:text-gray-300 mb-4 font-amiri leading-relaxed">
+                    <strong>Explication:</strong> {croyance.explication}
+                  </p>
+                  {/* Lecteur audio */}
+                  {croyance.audio && (
+                    <div className="mt-4">
+                      <audio controls className="w-full">
+                        <source src={croyance.audio} type="audio/mpeg" />
+                        Votre navigateur ne supporte pas l'élément audio.
+                      </audio>
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
