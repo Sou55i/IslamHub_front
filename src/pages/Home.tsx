@@ -13,7 +13,7 @@ const mockPrayerTimes = {
 };
 
 const mockQuote = {
-  text: "The best among you are those who have the best manners and character.",
+  text: "Celui pour qui Allah veut le bien, lui facilite l'apprentissage de la religion",
   author: "Prophet Muhammad ﷺ",
   source: "Sahih Al-Bukhari"
 };
@@ -31,13 +31,14 @@ export const Home: React.FC = () => {
           className="relative text-center px-4"
         >
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 font-amiri">
-            بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
+            بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ 
           </h1>
+          
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Welcome to IslamicHub
+            Bienvenu sur le site IslamicHub 
           </h2>
           <p className="text-lg md:text-xl text-emerald-50">
-            Your source for Islamic knowledge and guidance
+            Votre source de savoir 
           </p>
         </motion.div>
       </div>
