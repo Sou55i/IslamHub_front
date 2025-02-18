@@ -30,14 +30,14 @@ export const Home: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           className="relative text-center px-4"
         >
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 font-amiri">
+          <h1 className="text-4xl md:text-6xl font-bold text-white mb-12 font-amiri">
             بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
           </h1>
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Welcome to IslamicHub
+            Bienvenu sur IslamHub
           </h2>
           <p className="text-lg md:text-xl text-emerald-50">
-            Your source for Islamic knowledge and guidance
+            Croyance de Ahlou 'sounnah wal jamaa
           </p>
         </motion.div>
       </div>

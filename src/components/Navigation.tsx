@@ -11,6 +11,7 @@ const navItems = [
   { to: '/biographies', icon: Users, label: 'Biographies' },
   { to: '/multimedia', icon: Video, label: 'Multimedia' },
   { to: '/prayer-times', icon: Clock, label: 'Prayer Times' },
+  { to: '/madhaheb', icon: BookOpen, label: 'Madhaheb' },
 ];
 
 export const Navigation: React.FC = () => {

@@ -33,7 +33,7 @@ export const Hadiths: React.FC = () => {
         <div className="relative text-center px-4">
           <h1 className="text-4xl font-bold text-white mb-4 font-amiri">Hadiths</h1>
           <p className="text-lg text-emerald-50 max-w-2xl mx-auto">
-            Explore the sayings and traditions of Prophet Muhammad ﷺ
+            Reccueil des Hadiths de notre bien aimé Muhammad ﷺ
           </p>
         </div>
       </motion.div>
@@ -44,7 +44,7 @@ export const Hadiths: React.FC = () => {
             <div className="flex-1 relative">
               <input
                 type="text"
-                placeholder="Search hadiths..."
+                placeholder="Rechercher un hadith..."
                 className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-transparent"
               />
               <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
