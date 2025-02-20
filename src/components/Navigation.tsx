@@ -6,7 +6,8 @@ import moment from 'moment-hijri'; // Importer moment-hijri
 
 const navItems = [
   { to: '/hadiths', icon: Book, label: 'Hadiths' },
-  { to: '/invocations', icon: Heart, label: 'Invocations' },
+  { to: '/dhikrs', icon: Heart, label: 'Dhikrs' },
+  { to: '/douaas', icon: Heart, label: 'Douaas' },
   { to: '/jurisprudence', icon: BookOpen, label: 'Jurisprudence' },
   { to: '/biographies', icon: Users, label: 'Biographies' },
   { to: '/multimedia', icon: Video, label: 'Multimedia' },

@@ -3,7 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Navigation } from './components/Navigation';
 import { Home } from './pages/Home';
 import { Hadiths } from './pages/Hadiths';
-import { Invocations } from './pages/Invocations';
+import { Dhikrs } from './pages/Dhikrs';
+import { Douaas } from './pages/Douaas';
 import { Jurisprudence } from './pages/Jurisprudence';
 import { Biographies } from './pages/Biographies';
 import { Multimedia } from './pages/Multimedia';
@@ -26,7 +27,8 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/hadiths" element={<Hadiths />} />
-              <Route path="/invocations" element={<Invocations />} />
+              <Route path="/dhikrs" element={<Dhikrs />} />
+              <Route path="/douaas" element={<Douaas />} />
               <Route path="/jurisprudence" element={<Jurisprudence />} />
               <Route path="/biographies" element={<Biographies />} />
               <Route path="/multimedia" element={<Multimedia />} />

@@ -81,7 +81,7 @@ export const Home: React.FC = () => {
             className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 border border-emerald-100 dark:border-emerald-800 hover:border-emerald-300 dark:hover:border-emerald-700 transition-colors"
           >
             <div className="text-center mb-6">
-              <h3 className="text-2xl font-amiri font-semibold mb-2 dark:text-white">Daily Invocations</h3>
+              <h3 className="text-2xl font-amiri font-semibold mb-2 dark:text-white">Daily Dhikrs</h3>
               <div className="w-16 h-1 bg-emerald-500 dark:bg-emerald-400 mx-auto"></div>
             </div>
             <p className="text-gray-600 dark:text-gray-300 text-center">Coming soon...</p>
