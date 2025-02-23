@@ -2,17 +2,12 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
-export const Croyance: React.FC = () => {
-  const croyance = [
-    { id: 1, name: 'Croire en Dieu', path: '/croyance/CroyanceEnDieu' },
-    { id: 2, name: 'Croire en tous les Prophètes', path: '/croyance/CroyanceProphetes' },
-    { id: 3, name: 'Croire aux Anges honorés', path: '/croyance/CroyanceAnges' },
-    { id: 4, name: 'Livres révélés', path: '/croyance/CroyanceLivres' },
-    { id: 5, name: 'La tombe', path: '/croyance/CroyanceTombe' },
-    { id: 6, name: 'Le jour dernier', path: '/croyance/CroyanceJourDernier' },
-    { id: 7, name: 'Prédestination du bien et du mal', path: '/croyance/CroyancePredestination' },
-    { id: 8, name: 'Création du monde', path: '/croyance/CroyanceCreationDuMonde' },
-    
+export const CroyanceEnDieu: React.FC = () => {
+  const croyanceEnDieu = [
+    { id: 1, name: 'Attributs de Dieu', path: '/croyance/CroireEnDieu/AttributsDeDieu' },
+    { id: 2, name: 'Dieu exsite sans endroit', path: '/croyance/CroireEnDieu/DieuExisteSansEndroit' },
+    { id: 3, name: 'Dieu ne resselble pas aux créatures', path: '/croyance/CroireEnDieu/DieuSansComment' },
+    { id: 4, name: 'Les noms parfait de Dieu', path: '/croyance/CroireEnDieu/LesNomsDeDieu' },
   ];
 
   return (
@@ -24,26 +19,26 @@ export const Croyance: React.FC = () => {
       >
         <div className="absolute inset-0 bg-emerald-900/80 dark:bg-emerald-950/90 backdrop-blur-sm"></div>
         <div className="relative text-center px-4">
-          <h1 className="text-4xl font-bold text-white mb-4 font-amiri">Foi</h1>
+          <h1 className="text-4xl font-bold text-white mb-4 font-amiri">CroyanceEnDieu</h1>
           <p className="text-lg text-emerald-50 max-w-2xl mx-auto">
-            Les bases de la foi
+            Croyance en Dieu
           </p>
         </div>
       </motion.div>
 
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {croyance.map((croyance) => (
+          {croyanceEnDieu.map((croyanceEnDieu) => (
             <motion.div
-              key={croyance.id}
+              key={croyanceEnDieu.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: croyance.id * 0.1 }}
+              transition={{ delay: croyanceEnDieu.id * 0.1 }}
               className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-emerald-100 dark:border-emerald-800 hover:border-emerald-300 dark:hover:border-emerald-700 transition-colors"
             >
-              <Link to={croyance.path} className="block text-center">
+              <Link to={croyanceEnDieu.path} className="block text-center">
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white font-amiri">
-                  {croyance.name}
+                  {croyanceEnDieu.name}
                 </h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                   En savoir plus
