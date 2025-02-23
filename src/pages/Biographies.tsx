@@ -39,9 +39,9 @@ export const Biographies: React.FC = () => {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[
-            { name: 'Abu Bakr As-Siddiq', title: 'The First Caliph', category: 'Companion' },
-            { name: 'Umar ibn Al-Khattab', title: 'The Second Caliph', category: 'Companion' },
-            { name: 'Imam Al-Bukhari', title: 'Master of Hadith', category: 'Scholar' },
+            { name: 'Abu Bakr As-Siddiq', title: 'Le Premier Calife', category: 'Compagnon' },
+            { name: 'Umar ibn Al-Khattab', title: 'Le Second Calife', category: 'Compagnon' },
+            { name: 'Imam Al-Bukhari', title: 'Master of Hadith', category: 'Rapporteur' },
           ].map((person, index) => (
             <motion.div
               key={person.name}

@@ -14,8 +14,9 @@ const AttributsDeDieu: React.FC = () => {
         <p className="font-amiri text-gray-600 dark:text-gray-300 text-2xl text-center my-4">
           ﴿ أَفِي اللهِ شَكّ ﴾
         </p>
+        <p className="text-gray-600 dark:text-gray-300 text-center">(‘Afī l-Lāhi chakk)</p>
         <p className="text-gray-600 dark:text-gray-300 italic">
-          (‘Afī l-Lāhi chakk) ce qui signifie : « Il n'y a pas de doute au sujet de l'existence de Allāh ».
+           ce qui signifie : « Il n'y a pas de doute au sujet de l'existence de Allāh ».
         </p>
         <p className="text-gray-600 dark:text-gray-300">
           L'existence de Dieu n’est pas due à la création de quiconque. Dieu existe et n’a pas de ressemblance avec les créatures. Il existe sans comment et sans endroit comme l’a dit l’Imām `Aliyy que Allāh l'agrée et honore son visage : « Allāh est de toute éternité alors qu'il n'y a pas d'endroit de toute éternité, et Il est maintenant tel qu'Il est de toute éternité ».
@@ -45,8 +46,9 @@ const AttributsDeDieu: React.FC = () => {
         <p className="font-amiri text-gray-600 dark:text-gray-300 text-2xl text-center my-4">
           ﴿ لَيْسَ كَمِثْلِهِ شَىءٌ ﴾
         </p>
+        <p className="text-gray-600 dark:text-gray-300 text-center">(layça kamithlihi chay’)</p>
         <p className="text-gray-600 dark:text-gray-300 italic">
-          (layça kamithlihi chay’) ce qui signifie : « Absolument rien ne ressemble à Allāh » [soūrat Ach-Choūrā / 'āyah 11].
+           ce qui signifie : « Absolument rien ne ressemble à Allāh » [soūrat Ach-Choūrā / 'āyah 11].
         </p>
         <p className="text-gray-600 dark:text-gray-300">
           L’Imām Aboū Ja`far At-Ṭaḥāwiyy (mort en 323 de l’Hégire) a dit : « Il est exempt – c’est-à-dire Allāh – des limites, des fins, des côtés, des organes et des membres ; Il n’est pas concerné par les six directions contrairement à toutes les créatures ».
@@ -64,12 +66,25 @@ const AttributsDeDieu: React.FC = () => {
         <p className="font-amiri text-gray-600 dark:text-gray-300 text-2xl text-center my-4">
           ﴿ وَإِلَهُكُمْ إِلَـهٌ وَاحِدٌ ﴾
         </p>
+        <p className="text-gray-600 dark:text-gray-300 text-center">(wa ‘ilāhoukoum ‘ilāhoun wāḥid)</p>
         <p className="text-gray-600 dark:text-gray-300 italic">
-          (wa ‘ilāhoukoum ‘ilāhoun wāḥid) ce qui signifie : « Votre Dieu est un dieu unique » [soūrat al-Baqarah / 'āyah 163].
+           ce qui signifie : « Votre Dieu est un dieu unique » [soūrat al-Baqarah / 'āyah 163].
         </p>
         <p className="text-gray-600 dark:text-gray-300">
-          Si Allāh Ta`ālā n’était pas unique mais multiple, le monde ne serait pas ordonné ; or le monde est ordonné : il est donc obligatoire que Allāh soit unique. L’Imām Aboū Hanīfah a dit : « Allāh est Unique, non pas du point de vue numérique, mais dans le sens qu’Il n’a pas d’associé ».
+          Si Allāh Ta`ālā n’était pas unique mais multiple, le monde ne serait pas ordonné ; or le monde est ordonné : il est donc obligatoire que Allāh soit unique. L’Imām Aboū Hanīfah a dit : <strong>« Allāh est Unique, non pas du point de vue numérique, mais dans le sens qu’Il n’a pas d’associé »</strong>.
         </p>
+        <p className="text-gray-600 dark:text-gray-300">
+          La preuve rationnelle de Son unicité est qu'il est indispensable que celui qui crée l'univers soit vivant, tout-puissant, ayant une science, une volonté et un choix. Comme il a été confirmé que celui qui crée l'univers a pour attribut ce que nous avons cité, nous disons : si le monde avait deux créateurs, il serait obligatoire selon la raison que chacun d'eux soit vivant, tout-puissant, ayant une science, une volonté et un choix. Or il est possible selon la raison à deux êtres ayant le choix qu'ils divergent dans leurs choix car chacun d'entre eux n'est pas obligé d'être en accord avec l'autre dans son choix, sinon ils seraient contraints et celui qui est contraint ne peut avoir la divinité. Par conséquent, si cela était valable, si l'un des deux voulait l'opposé de ce que veut l'autre pour un même sujet, comme si l'un voulait la vie pour un homme et que l'autre voulait sa mort, il n'en irait pas autrement que leurs deux volontés se réalisent, ou que leurs deux volontés ne se réalisent pas ou que la volonté de l'un se réalise et non celle de l'autre. Il est impossible selon la raison que leurs deux volontés se réalisent du fait de leur contradiction mutuelle, c'est-à-dire que si l'un deux voulait qu'un homme vive et que l'autre voulait qu'il meure, il serait impossible que cet homme soit vivant et mort en même temps. Si leurs deux volontés ne se réalisent pas, ils sont tous les deux impuissants. Et si la volonté de l'un d'eux se réalise et celle de l'autre ne se réalise pas, alors celui dont la volonté ne se réalise pas est impuissant et celui qui est impuissant ne peut avoir la divinité et ne peut être exempt de début. Enfin si les deux volontés ne se réalisent pas alors cela confirme l'incapacité pour les deux. Cela montre clairement qu'il est impossible selon la raison l'associé au sujet de Dieu. Cette preuve est connue chez les savants du tawḥīd et elle est appelé la preuve de l'incompatibilité mutuelle. Allāh Ta`ālā dit :
+        </p>
+        <p className="font-amiri text-gray-600 dark:text-gray-300 text-2xl text-center my-4">
+          ﴿لَوْ كَانَ فِيهِمَا آلِهَةٌ إِلَّا اللَّـهُ لَفَسَدَتَاٌ ﴾
+        </p>
+        <p className="text-gray-600 dark:text-gray-300 text-center">(Law kāna fīhimā 'ālihatoun 'il-la l-Lāhou lafaçadatā)</p>
+        <p className="text-gray-600 dark:text-gray-300 italic">
+
+          ce qui signifie: <strong>« S'il y avait [pour le ciel et la terre] des dieux hormis Allāh, [les cieux et les terres] seraient certes en discordance »</strong> [soūrat al-'Anbiyā' / 'āyah 22].
+        </p>
+
       </div>
 
       {/* Ajoutez d'autres sections pour les autres attributs ici */}

@@ -23,9 +23,9 @@ export const Jurisprudence: React.FC = () => {
       >
         <div className="absolute inset-0 bg-emerald-900/80 dark:bg-emerald-950/90 backdrop-blur-sm"></div>
         <div className="relative text-center px-4">
-          <h1 className="text-4xl font-bold text-white mb-4 font-amiri">Islamic Jurisprudence</h1>
+          <h1 className="text-4xl font-bold text-white mb-4 font-amiri">Jurisprudence Islamique</h1>
           <p className="text-lg text-emerald-50 max-w-2xl mx-auto">
-            Learn about Islamic law and rulings
+            Apprendre les lois et les régles de l'Islam
           </p>
         </div>
       </motion.div>
@@ -67,7 +67,7 @@ export const Jurisprudence: React.FC = () => {
                     {topic}
                   </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    View rulings and guidelines
+                    En savoir plus
                   </p>
                 </div>
               </div>
