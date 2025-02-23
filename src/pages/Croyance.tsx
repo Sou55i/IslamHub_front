@@ -4,14 +4,14 @@ import { Link } from 'react-router-dom';
 
 export const Croyance: React.FC = () => {
   const croyance = [
-    { id: 1, name: 'Croire en Dieu', path: '/croyance/CroyanceEnDieu' },
-    { id: 2, name: 'Croire en tous les Prophètes', path: '/croyance/CroyanceProphetes' },
-    { id: 3, name: 'Croire aux Anges honorés', path: '/croyance/CroyanceAnges' },
-    { id: 4, name: 'Livres révélés', path: '/croyance/CroyanceLivres' },
-    { id: 5, name: 'La tombe', path: '/croyance/CroyanceTombe' },
-    { id: 6, name: 'Le jour dernier', path: '/croyance/CroyanceJourDernier' },
-    { id: 7, name: 'Prédestination du bien et du mal', path: '/croyance/CroyancePredestination' },
-    { id: 8, name: 'Création du monde', path: '/croyance/CroyanceCreationDuMonde' },
+    { id: 1, name: 'Croire en Dieu', path: '/foi/CroyanceEnDieu' },
+    { id: 2, name: 'Croire en tous les Prophètes', path: '/foi/CroyanceProphetes' },
+    { id: 3, name: 'Croire aux Anges honorés', path: '/foi/CroyanceAnges' },
+    { id: 4, name: 'Livres révélés', path: '/foi/CroyanceLivres' },
+    { id: 5, name: 'La tombe', path: '/foi/CroyanceTombe' },
+    { id: 6, name: 'Le jour dernier', path: '/foi/CroyanceJourDernier' },
+    { id: 7, name: 'Prédestination du bien et du mal', path: '/foi/CroyancePredestination' },
+    { id: 8, name: 'Création du monde', path: '/foi/CroyanceCreationDuMonde' },
     
   ];
 

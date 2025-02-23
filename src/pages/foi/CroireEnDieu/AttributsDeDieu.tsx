@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const AttributsDeDieu: React.FC = () => {
+const AttributsDeDieu: React.FC = () => {
   return (
     <div className="space-y-12">
       {/* Section 1 : L'existence */}
@@ -76,3 +76,5 @@ export const AttributsDeDieu: React.FC = () => {
     </div>
   );
 };
+
+export default AttributsDeDieu;

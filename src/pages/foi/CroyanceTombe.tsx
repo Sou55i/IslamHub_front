@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const Hanbalite: React.FC = () => {
+const tombe: React.FC = () => {
   return (
     <div className="space-y-8">
       <div className="relative py-16 bg-arabesque bg-cover bg-center">
@@ -23,3 +23,5 @@ export const Hanbalite: React.FC = () => {
     </div>
   );
 };
+
+export default tombe;

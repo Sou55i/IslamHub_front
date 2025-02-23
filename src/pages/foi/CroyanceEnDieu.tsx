@@ -2,12 +2,12 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
-export const CroyanceEnDieu: React.FC = () => {
+ const CroyanceEnDieu: React.FC = () => {
   const croyanceEnDieu = [
-    { id: 1, name: 'Attributs de Dieu', path: '/croyance/CroireEnDieu/AttributsDeDieu' },
-    { id: 2, name: 'Dieu exsite sans endroit', path: '/croyance/CroireEnDieu/DieuExisteSansEndroit' },
-    { id: 3, name: 'Dieu ne resselble pas aux créatures', path: '/croyance/CroireEnDieu/DieuSansComment' },
-    { id: 4, name: 'Les noms parfait de Dieu', path: '/croyance/CroireEnDieu/LesNomsDeDieu' },
+    { id: 1, name: 'Attributs de Dieu', path: '/foi/CroireEnDieu/AttributsDeDieu' },
+    { id: 2, name: 'Dieu exsite sans endroit', path: '/foi/CroireEnDieu/DieuExisteSansEndroit' },
+    { id: 3, name: 'Dieu ne resselble pas aux créatures', path: '/foi/CroireEnDieu/DieuSansComment' },
+    { id: 4, name: 'Les noms parfait de Dieu', path: '/foi/CroireEnDieu/LesNomsDeDieu' },
   ];
 
   return (
@@ -51,3 +51,5 @@ export const CroyanceEnDieu: React.FC = () => {
     </div>
   );
 };
+
+export default CroyanceEnDieu;

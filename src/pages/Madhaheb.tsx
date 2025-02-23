@@ -4,10 +4,10 @@ import { Link } from 'react-router-dom';
 
 export const Madhaheb: React.FC = () => {
   const madhaheb = [
-    { id: 1, name: 'Hanafi', path: '/madhaheb/Hanafi' },
-    { id: 2, name: 'Maliki', path: '/madhaheb/Malikite' },
-    { id: 3, name: 'Shafi\'i', path: '/madhaheb/Shafii' },
-    { id: 4, name: 'Hanbali', path: '/madhaheb/Hanbalite' },
+    { id: 1, name: 'Hanafi', path: '/ecoles/Hanafi' },
+    { id: 2, name: 'Maliki', path: '/ecoles/Malikite' },
+    { id: 3, name: 'Shafi\'i', path: '/ecoles/Shafii' },
+    { id: 4, name: 'Hanbali', path: '/ecoles/Hanbalite' },
   ];
 
   return (

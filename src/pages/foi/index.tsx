@@ -1,5 +1,6 @@
+// src/pages/croyance/index.croyance.tsx
 export { default as CroyanceEnDieu } from './CroyanceEnDieu';
-export { default as CroyanceAnges } from './CroyanceAnges';
+export { default as CroyanceAnges } from './CroyanceAnges'; // Export par défaut
 export { default as CreationMonde } from './CroyanceCreationDuMonde';
 export { default as jourDernier } from './CroyanceJourDernier';
 export { default as predestination } from './CroyancePredestination';
