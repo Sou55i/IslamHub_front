@@ -13,6 +13,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { Croyance } from './pages/Croyance';
 import { Madhaheb } from './pages/Madhaheb';
 import AttributsDeDieu from './pages/foi/CroireEnDieu/AttributsDeDieu';
+import Arabe from './pages/hadith/Al-Bukhari/Arabe'
 
 
 // Import groupé depuis le dossier foi
@@ -49,7 +50,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/croyance" element={<Croyance />} />
               <Route path="/hadiths" element={<Hadiths />} />
-              
+              <Route path="/hadiths/albukhari/Arabe" element={<Arabe />} />
               <Route path="/dhikrs" element={<Dhikrs />} />
               <Route path="/douaas" element={<Douaas />} />
               <Route path="/jurisprudence" element={<Jurisprudence />} />
