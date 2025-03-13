@@ -35,6 +35,8 @@ import {
   Hanbalite,
 } from './pages/ecoles';
 
+import { AlBukhari } from './pages/hadith';
+
 
 function App() {
   return (
@@ -47,6 +49,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/croyance" element={<Croyance />} />
               <Route path="/hadiths" element={<Hadiths />} />
+              
               <Route path="/dhikrs" element={<Dhikrs />} />
               <Route path="/douaas" element={<Douaas />} />
               <Route path="/jurisprudence" element={<Jurisprudence />} />

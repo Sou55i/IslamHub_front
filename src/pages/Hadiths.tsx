@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Book, Search, Filter } from 'lucide-react';
+import {Book, Search, Filter, BookOpen} from 'lucide-react';
 import { useHadiths } from '../context/HadithProvider';
 
 export const Hadiths: React.FC = () => {
@@ -54,6 +54,32 @@ export const Hadiths: React.FC = () => {
               Filter
             </button>
           </div>
+        </div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {['Sahih Al Bukhari', 'Sahih Muslim', 'Jeûne', 'Zakat', 'Mariage', 'Ventes', 'Famille'].map((topic, index) => (
+              <motion.div
+                  key={topic}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-emerald-100 dark:border-emerald-800 hover:border-emerald-300 dark:hover:border-emerald-700 transition-colors group cursor-pointer"
+                  onClick={() => handleTopicClick(topic)} // Gestion du clic
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center group-hover:bg-emerald-200 dark:group-hover:bg-emerald-800/50 transition-colors">
+                    <BookOpen className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white font-amiri">
+                      {topic}
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      En savoir plus
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+          ))}
         </div>
 
         <div className="grid gap-6">
