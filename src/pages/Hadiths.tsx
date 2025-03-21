@@ -8,8 +8,8 @@ export const Hadiths: React.FC = () => {
 
   const handleTopicClick = (topic: string) => {
     // Redirigez vers la page correspondante
-    if (topic === 'Croyance') {
-      navigate('/croyance');
+    if (topic === 'Sahih Al Bukhari') {
+      navigate('/hadith/albukhari');
     }
     // Ajoutez d'autres conditions pour les autres thèmes
   };

@@ -13,7 +13,8 @@ import { ThemeProvider } from './context/ThemeContext';
 import { Croyance } from './pages/Croyance';
 import { Madhaheb } from './pages/Madhaheb';
 import AttributsDeDieu from './pages/foi/CroireEnDieu/AttributsDeDieu';
-import Arabe from './pages/hadith/Al-Bukhari/Arabe'
+import part1 from './pages/hadith/Al-Bukhari/part1'
+import AlBukhari from './pages/hadith/Al-Bukhari/AlBukhari';
 
 
 // Import groupé depuis le dossier foi
@@ -36,7 +37,7 @@ import {
   Hanbalite,
 } from './pages/ecoles';
 
-import { AlBukhari } from './pages/hadith';
+
 
 
 function App() {
@@ -50,7 +51,8 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/croyance" element={<Croyance />} />
               <Route path="/hadiths" element={<Hadiths />} />
-              <Route path="/hadiths/albukhari/Arabe" element={<Arabe />} />
+              <Route path="/hadith/albukhari" element={<AlBukhari />} />
+              <Route path="/hadith/albukhari/part1" element={<part1 />} />
               <Route path="/dhikrs" element={<Dhikrs />} />
               <Route path="/douaas" element={<Douaas />} />
               <Route path="/jurisprudence" element={<Jurisprudence />} />

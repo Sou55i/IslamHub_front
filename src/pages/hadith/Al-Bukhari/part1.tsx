@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Arabe: React.FC = () => {
+const part1: React.FC = () => {
     return (
         <div className="space-y-12">
             {/* Section 1 : Début de la révélation */}
@@ -65,4 +65,4 @@ const Arabe: React.FC = () => {
     );
 };
 
-export default Arabe;
+export default part1;

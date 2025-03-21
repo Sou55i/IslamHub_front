@@ -1,4 +1,4 @@
 # ajout calendrier Islam dans le header
 
 # Revoir les pages hadiths
-    - Al-Bukhari/Arabe
+   supprimer page part1
