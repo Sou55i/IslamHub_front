@@ -15,6 +15,9 @@ import { Madhaheb } from './pages/Madhaheb';
 import AttributsDeDieu from './pages/foi/CroireEnDieu/AttributsDeDieu';
 import part1 from './pages/hadith/Al-Bukhari/part1'
 import AlBukhari from './pages/hadith/Al-Bukhari/AlBukhari';
+import ArgumentationGlobale from './pages/repliques/Athees/ArgumentationGlobale';
+import Introduction from './pages/repliques/Athees/Introduction';
+import Raison from './pages/repliques/Athees/raison'
 
 
 // Import groupé depuis le dossier foi
@@ -56,6 +59,9 @@ function App() {
               <Route path="/dhikrs" element={<Dhikrs />} />
               <Route path="/douaas" element={<Douaas />} />
               <Route path="/jurisprudence" element={<Jurisprudence />} />
+              <Route path="/jurisprudence/repliques/athees/argumentation-globale" element={<ArgumentationGlobale />} />
+              <Route path="/jurisprudence/repliques/athees/introduction" element={<Introduction />} />
+              <Route path="/jurisprudence/repliques/athees/raison" element={<Raison />} />
               <Route path="/biographies" element={<Biographies />} />
               <Route path="/multimedia" element={<Multimedia />} />
               <Route path="/prayer-times" element={<PrayerTimesPage />} />

@@ -6,15 +6,10 @@ const part1: React.FC = () => {
             {/* Section 1 : Début de la révélation */}
             <div className="space-y-6">
              
-                <p className="font-amiri text-gray-600 dark:text-gray-300 text-4xl text-center my-4">
-                    بسم الله الرحمن الرحيم
-                </p>
-                <p className="text-gray-600 dark:text-gray-300 text-right font-amiri-quran text-2xl">
-                صحيح البخاري-الجزء الأول               
-                </p>
+                
                 <p className="font-arabic text-gray-600 dark:text-gray-300 text-3xl text-center my-4">
-                بدء الوحي
-                 </p>
+                كِتَابُ الإِيمَانِ                 
+                </p>
                 <p className="text-gray-600 dark:text-gray-300 text-right font-arabic text-2xl">
                 :قَالَ الشَّيْخُ الْإِمَامُ الْحَافِظُ أَبُو عَبْدِ اللَّهِ مُحَمَّدُ بْنُ إِسْمَاعِيلَ بْنِ إِبْرَاهِيمَ بْنِ الْمُغِيرَةِ الْبُخَارِيُّ رَحِمَهُ اللَّهُ تَعَالَى آمِينَ 
                 </p>
