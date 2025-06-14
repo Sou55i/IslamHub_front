@@ -13,6 +13,15 @@ export interface DailyQuote {
   source?: string;
 }
 
+export type Hadith = {
+  id: number;
+  text_ar: string;
+  text_fr: string;
+  source: string;
+  tags: string[];
+  themes: string[];
+};
+
 export interface City {
   name: string;
   country: string;

@@ -12,6 +12,7 @@ export const Croyance: React.FC = () => {
     { id: 6, name: 'Le jour dernier', path: '/foi/CroyanceJourDernier' },
     { id: 7, name: 'Prédestination du bien et du mal', path: '/foi/CroyancePredestination' },
     { id: 8, name: 'Création du monde', path: '/foi/CroyanceCreationDuMonde' },
+
     
   ];
 

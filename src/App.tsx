@@ -15,9 +15,13 @@ import { Madhaheb } from './pages/Madhaheb';
 import AttributsDeDieu from './pages/foi/CroireEnDieu/AttributsDeDieu';
 import part1 from './pages/hadith/Al-Bukhari/part1'
 import AlBukhari from './pages/hadith/Al-Bukhari/AlBukhari';
-import ArgumentationGlobale from './pages/repliques/Athees/ArgumentationGlobale';
-import Introduction from './pages/repliques/Athees/Introduction';
-import Raison from './pages/repliques/Athees/raison'
+import ArgumentationGlobale from './pages/foi/Sectes/Repliques/Athees/ArgumentationGlobale.tsx';
+import Introduction from './pages/foi/Sectes/Repliques/Athees/introduction.tsx';
+import Repliques from './pages/Repliques.tsx'
+import Raison from './pages/foi/Sectes/Repliques/Athees/raison.tsx'
+import Sectes from './pages/foi/Sectes/Sectes.tsx';
+import MiseEnGarde from './pages/Mise-en-garde.tsx';
+
 
 
 // Import groupé depuis le dossier foi
@@ -79,6 +83,9 @@ function App() {
               <Route path="/foi/predestination" element={<predestination />} />
               <Route path="/foi/tombe" element={<tombe />} />
               <Route path="/foi/livres" element={<livres />} />
+              <Route path="/sectes" element={<Sectes />} />
+              <Route path="/mise-en-garde" element={<MiseEnGarde />} />
+              <Route path="/repliques" element={<Repliques />} />
             </Routes>
           </main>
         </div>

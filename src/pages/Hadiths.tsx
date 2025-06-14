@@ -7,12 +7,53 @@ export const Hadiths: React.FC = () => {
   const navigate = useNavigate(); // Utilisez useNavigate pour la navigation
 
   const handleTopicClick = (topic: string) => {
-    // Redirigez vers la page correspondante
-    if (topic === 'Sahih Al Bukhari') {
-      navigate('/hadith/albukhari');
+    switch (topic) {
+      case 'Sahih Al Bukhari':
+        navigate('/hadith/albukhari');
+        break;
+      case 'Sahih Muslim':
+        navigate('/hadith/muslim');
+        break;
+      case 'رياض الصالحين':
+        navigate('/hadith/riyadhassalihin');
+        break;
+      case 'كتاب ذكر الموت':
+        navigate('/hadith/dhikralmout');
+        break;
+      case 'الأربعون في التصوف':
+        navigate('/hadith/arbaoune-tasawwuf');
+        break;
+      case 'المنتقى من صحيح مسلم':
+        navigate('/hadith/montaqa-sahihmuslim');
+        break;
+      case 'Croyance':
+        navigate('/hadith/croyance');
+        break;
+      case 'Salat':
+        navigate('/hadith/salat');
+        break;
+      case 'Jeûne':
+        navigate('/hadith/jeune');
+        break;
+      case 'Zakat':
+        navigate('/hadith/zakat');
+        break;
+      case 'Mariage':
+        navigate('/hadith/mariage');
+        break;
+      case 'Ventes':
+        navigate('/hadith/ventes');
+        break;
+      case 'Famille':
+        navigate('/hadith/famille');
+        break;
+      default:
+        console.warn(`Aucune route définie pour le thème : ${topic}`);
+        break;
     }
-    // Ajoutez d'autres conditions pour les autres thèmes
   };
+
+
 
   return (
     <div className="space-y-8">

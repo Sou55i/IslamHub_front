@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
   const croyanceEnDieu = [
     { id: 1, name: 'Attributs de Dieu', path: '/foi/CroireEnDieu/AttributsDeDieu' },
     { id: 2, name: 'Dieu exsite sans endroit', path: '/foi/CroireEnDieu/DieuExisteSansEndroit' },
-    { id: 3, name: 'Dieu ne resselble pas aux créatures', path: '/foi/CroireEnDieu/DieuSansComment' },
+    { id: 3, name: 'Dieu ne ressemble pas aux créatures', path: '/foi/CroireEnDieu/DieuSansComment' },
     { id: 4, name: 'Les noms parfait de Dieu', path: '/foi/CroireEnDieu/LesNomsDeDieu' },
   ];
 
