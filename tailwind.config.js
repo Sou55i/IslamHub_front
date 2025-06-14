@@ -7,7 +7,8 @@ export default {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         amiri: ['Amiri', 'serif'],
-        arabic: ['Noto Naskh Arabic', 'serif'],
+        arabic: ['"Noto Naskh Arabic"', 'serif'],
+        
       },
       colors: {
         emerald: {

@@ -1,0 +1,35 @@
+[
+  {
+    "id": 3,
+    "sujet": "Dhikr",
+    "texte_arabe": "لا إله إلا الله محمد رسول الله",
+    "texte_francais": "Il n’y a de dieu qu’Allah et Muhammad est son messager.",
+    "phonetique": "Lā ilāha illā Allāhou Muhammadou rasoulou Allāh",
+    "explication": "",
+    "type_id": 4,
+    "commentaire": "La base de la croyance islamique.",
+    "tag": "croyance, tawhid"
+  },
+  {
+    "id": 1,
+    "sujet": "Invocation quand on se réveille au milieu de la nuit",
+    "texte_arabe": "أَعُوذُ بكلماتِ اللهِ التآماتِ من غضبِهِ وعقابِهِ وشَرِّ عبادِهِ ومِنْ هَمَزَاتِ الشَّيَاطِينِ وأَنْ يَحضُرُونَ",
+    "texte_francais": "Nous enseignons cette dhikr à ceux qui avait atteint le discernement parmi nos enfants. Et ceux qui n’avait pas encore atteint le discernement, on l’écrivait et on l’accrochait à leurs cous",
+    "phonetique": "'a`ôudhou bi kalimâti l-Lâhi t-tâmmâti min ghaḍabihi wa `iqâbih wa charri `ibâdih wa min hamazâti ch-chayâṭîn wa 'an yaḥḍourôun",
+    "explication": "Invocation demandant la paix et la protection.",
+    "type_id": 4,
+    "commentaire": "At-tirmîdhiyy a dit: « c’est un ḥadīth qui est ḥaçan »",
+    "tag": "protection"
+  },
+  {
+    "id": 2,
+    "sujet": "Dhikr",
+    "texte_arabe": "الله الله ربّي لا أُشركُ به شيئًا",
+    "texte_francais": "Allāh, Allāh est mon Seigneur, je ne lui associe rien.",
+    "phonetique": "Allāhou Allāhou rabbī lā `ouchrikou bihī chay`â",
+    "explication": "",
+    "type_id": 4,
+    "commentaire": "Évocation à faire matin et soir.",
+    "tag": "tahsin, protection"
+  }
+]

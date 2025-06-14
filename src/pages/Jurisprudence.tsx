@@ -1,8 +1,19 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen, Search, Filter } from 'lucide-react';
+import { useNavigate } from 'react-router-dom'; // Importez useNavigate
 
 export const Jurisprudence: React.FC = () => {
+  const navigate = useNavigate(); // Utilisez useNavigate pour la navigation
+
+  const handleTopicClick = (topic: string) => {
+    // Redirigez vers la page correspondante
+    if (topic === 'Croyance') {
+      navigate('/croyance');
+    }
+    // Ajoutez d'autres conditions pour les autres thèmes
+  };
+
   return (
     <div className="space-y-8">
       <motion.div 
@@ -12,9 +23,9 @@ export const Jurisprudence: React.FC = () => {
       >
         <div className="absolute inset-0 bg-emerald-900/80 dark:bg-emerald-950/90 backdrop-blur-sm"></div>
         <div className="relative text-center px-4">
-          <h1 className="text-4xl font-bold text-white mb-4 font-amiri">Islamic Jurisprudence</h1>
+          <h1 className="text-4xl font-bold text-white mb-4 font-amiri">Jurisprudence Islamique</h1>
           <p className="text-lg text-emerald-50 max-w-2xl mx-auto">
-            Learn about Islamic law and rulings
+            Apprendre les lois et les régles de l'Islam
           </p>
         </div>
       </motion.div>
@@ -38,13 +49,14 @@ export const Jurisprudence: React.FC = () => {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {['Croyance','Salat', 'Jeûne', 'Zakat', 'Mariage', 'Ventes', 'Famille'].map((topic, index) => (
+          {['Croyance', 'Salat', 'Jeûne', 'Zakat', 'Mariage', 'Ventes', 'Famille', 'Femmes'].map((topic, index) => (
             <motion.div
               key={topic}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
               className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-emerald-100 dark:border-emerald-800 hover:border-emerald-300 dark:hover:border-emerald-700 transition-colors group cursor-pointer"
+              onClick={() => handleTopicClick(topic)} // Gestion du clic
             >
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center group-hover:bg-emerald-200 dark:group-hover:bg-emerald-800/50 transition-colors">
@@ -55,7 +67,7 @@ export const Jurisprudence: React.FC = () => {
                     {topic}
                   </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    View rulings and guidelines
+                    En savoir plus
                   </p>
                 </div>
               </div>
