@@ -3,16 +3,26 @@ import { motion } from 'framer-motion';
 import { BookOpen, Search, Filter } from 'lucide-react';
 import { useNavigate } from 'react-router-dom'; // Importez useNavigate
 
-const Repliques: React.FC = () => {
-    const navigate = useNavigate(); // Utilisez useNavigate pour la navigation
+ const Repliques: React.FC = () => {
+  const navigate = useNavigate(); // Utilisez useNavigate pour la navigation
 
-    const handleTopicClick = (topic: string) => {
-        // Redirigez vers la page correspondante
-        if (topic === 'Croyance') {
-            navigate('/croyance');
-        }
-        // Ajoutez d'autres conditions pour les autres thèmes
-    };
+     const handleTopicClick = (topic: string) => {
+         // Redirigez vers la page correspondante
+         switch (topic) {
+             case 'Réplique aux égarés qui attribuent à Dieu le corps et l\'endroit':
+                 navigate('/repliques/Allahexistesansendroit');
+                 break;
+             case 'Sahih Muslim':
+                 navigate('/hadith/sahihmuslim');
+                 break;
+             case 'Jami At-Tirmidhi':
+                 navigate('/hadith/attirmidhi');
+                 break;
+             // Ajoutez d'autres conditions pour les autres thèmes
+             default:
+                 break;
+         }
+     };
 
     return (
         <div className="space-y-8">
@@ -87,4 +97,4 @@ const Repliques: React.FC = () => {
     );
 };
 
-export default Repliques
+export default Repliques;

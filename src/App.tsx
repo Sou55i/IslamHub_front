@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import { Navigation } from './components/Navigation';
 import { Home } from './pages/Home';
 import { Hadiths } from './pages/Hadiths';
@@ -17,10 +17,11 @@ import part1 from './pages/hadith/Al-Bukhari/part1'
 import AlBukhari from './pages/hadith/Al-Bukhari/AlBukhari';
 import ArgumentationGlobale from './pages/foi/Sectes/Repliques/Athees/ArgumentationGlobale.tsx';
 import Introduction from './pages/foi/Sectes/Repliques/Athees/introduction.tsx';
-import Repliques from './pages/Repliques.tsx'
+import Repliques from './pages/./Repliques.tsx'
 import Raison from './pages/foi/Sectes/Repliques/Athees/raison.tsx'
 import Sectes from './pages/foi/Sectes/Sectes.tsx';
 import MiseEnGarde from './pages/Mise-en-garde.tsx';
+import AllahExisteSansEndroit from "./pages/repliques/AllahExisteSansEndroit.tsx";
 
 
 
@@ -86,6 +87,7 @@ function App() {
               <Route path="/sectes" element={<Sectes />} />
               <Route path="/mise-en-garde" element={<MiseEnGarde />} />
               <Route path="/repliques" element={<Repliques />} />
+              <Route path="/repliques/Allahexistesansendroit" element={<AllahExisteSansEndroit />} />
             </Routes>
           </main>
         </div>
