@@ -22,6 +22,7 @@ import Raison from './pages/foi/Sectes/Repliques/Athees/raison.tsx'
 import Sectes from './pages/foi/Sectes/Sectes.tsx';
 import MiseEnGarde from './pages/Mise-en-garde.tsx';
 import AllahExisteSansEndroit from "./pages/repliques/AllahExisteSansEndroit.tsx";
+import AlBaghdadiyy from './pages/repliques/ExtraitsDesLivresDesSavants/Al-Baghdadiyy.tsx';
 
 
 
@@ -87,6 +88,7 @@ function App() {
               <Route path="/sectes" element={<Sectes />} />
               <Route path="/mise-en-garde" element={<MiseEnGarde />} />
               <Route path="/repliques" element={<Repliques />} />
+              <Route path="/repliques/extraits-de-livres-de-savants/al-baghdadiyy" element={<AlBaghdadiyy />} />
               <Route path="/repliques/Allahexistesansendroit" element={<AllahExisteSansEndroit />} />
             </Routes>
           </main>
