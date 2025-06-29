@@ -216,7 +216,7 @@ export const Home: React.FC = () => {
       <footer className="bg-emerald-900 dark:bg-emerald-950 text-white py-12">
         <div className="container mx-auto px-4 text-center">
           <p className="text-emerald-300 mb-4 font-amiri text-xl">
-            "Quiconque conserve pour ma communauté quarante hadiths..."
+            "Que l’un de vous apprenne un chapitre de la religion ou l’enseigne aura plus de récompenses que de prier mille rak`ah des prières surérogatoires"
           </p>
           <p className="text-emerald-200">© {new Date().getFullYear()} IslamicHub - Tous droits réservés</p>
         </div>

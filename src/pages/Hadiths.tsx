@@ -473,7 +473,7 @@ useEffect(() => {
       <footer className="bg-emerald-900 dark:bg-emerald-950 text-white py-12">
         <div className="container mx-auto px-4 text-center">
           <p className="text-emerald-300 mb-4 font-amiri text-xl">
-            "Quiconque conserve pour ma communauté quarante hadiths..."
+            "On n’obéit pas à une créature pour désobéir au Créateur"
           </p>
           <p className="text-emerald-200">© 2023 Collection de Hadiths</p>
         </div>

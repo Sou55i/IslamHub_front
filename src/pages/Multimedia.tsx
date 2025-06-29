@@ -274,7 +274,7 @@ export const Multimedia: React.FC = () => {
       <footer className="bg-emerald-900 dark:bg-emerald-950 text-white py-12">
         <div className="container mx-auto px-4 text-center">
           <p className="text-emerald-300 mb-4 font-amiri text-xl">
-            "Cherchez la connaissance du berceau jusqu'à la tombe"
+            "Dieu existe de toute éternité et rien d’autre que Lui n’est de toute éternité"
           </p>
           <p className="text-emerald-200">© {new Date().getFullYear()} Média Islamique</p>
         </div>

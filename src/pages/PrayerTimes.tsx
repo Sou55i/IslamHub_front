@@ -223,7 +223,7 @@ export const PrayerTimesPage: React.FC = () => {
       <footer className="bg-emerald-900 dark:bg-emerald-950 text-white py-12">
         <div className="container mx-auto px-4 text-center">
           <p className="text-emerald-300 mb-4 font-amiri text-xl">
-            "La prière est la colonne de la religion"
+            "La meilleure des paroles que j’ai dite, moi ainsi que les prophètes qui m’ont précédé c’est لاَ إِلَهَ إِلَّا الله –Il n’est de dieu que Dieu"
           </p>
           <p className="text-emerald-200">© {new Date().getFullYear()} Horaires de Prière</p>
         </div>
