@@ -90,9 +90,8 @@ export const Jurisprudence: React.FC = () => {
     'Hanafite',
     'Malikite',
     'Chafiite',
-    'Hambalite',
-    'Jafarite',
-    'Zahirite'
+    'Hanbalite'
+    
   ];
 
   const handleTopicClick = (topic: string) => {
