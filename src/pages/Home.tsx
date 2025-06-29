@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { BookOpen, Search, Filter, X, Star, ChevronRight, Clock, Sun, Moon } from 'lucide-react';
 import { PrayerTimes } from '../components/PrayerTimes';
 import { DailyQuote } from '../components/DailyQuote';
 
@@ -18,90 +19,208 @@ const mockQuote = {
   source: "Sahih Al-Bukhari"
 };
 
+const featuredSections = [
+  {
+    title: "Derniers Hadiths",
+    icon: <BookOpen className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />,
+    description: "Explorez les dernières paroles prophétiques ajoutées à notre collection."
+  },
+  {
+    title: "Invocations Quotidiennes",
+    icon: <Sun className="h-6 w-6 text-amber-600 dark:text-amber-400" />,
+    description: "Découvrez des invocations pour chaque moment de votre journée."
+  },
+  {
+    title: "Vidéos Sélectionnées",
+    icon: <Clock className="h-6 w-6 text-rose-600 dark:text-rose-400" />,
+    description: "Regardez des enseignements de savants réputés."
+  }
+];
+
 export const Home: React.FC = () => {
   const [selectedCity] = useState("Paris");
 
   return (
-    <div className="space-y-8">
-      <div className="relative py-20 bg-arabesque bg-cover bg-center">
-        <div className="absolute inset-0 bg-emerald-900/80 dark:bg-emerald-950/90 backdrop-blur-sm transition-colors duration-200"></div>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="relative text-center px-4"
-        >
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 font-amiri">
-            بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ 
-          </h1>
-          
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Bienvenu sur le site IslamicHub 
-          </h2>
-          <p className="text-lg md:text-xl text-emerald-50">
-            Votre source de savoir 
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-emerald-50 dark:from-gray-900 dark:to-emerald-950">
+      {/* En-tête avec motif islamique */}
+      <motion.header
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative py-20 bg-emerald-800 dark:bg-emerald-950 overflow-hidden"
+      >
+        <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]" />
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-amber-50 dark:from-gray-900" />
+        
+        <div className="relative container mx-auto px-4 text-center">
+          <motion.h1 
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            className="text-5xl md:text-6xl font-bold text-white mb-6 font-amiri"
+          >
+            بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
+          </motion.h1>
+          <p className="text-xl text-emerald-200 max-w-3xl mx-auto">
+            Bienvenue sur IslamicHub - Votre source de savoir islamique
           </p>
-        </motion.div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="grid md:grid-cols-2 gap-8 -mt-16">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <DailyQuote quote={mockQuote} />
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <PrayerTimes times={mockPrayerTimes} city={selectedCity} />
-          </motion.div>
         </div>
+      </motion.header>
 
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 border border-emerald-100 dark:border-emerald-800 hover:border-emerald-300 dark:hover:border-emerald-700 transition-colors"
-          >
-            <div className="text-center mb-6">
-              <h3 className="text-2xl font-amiri font-semibold mb-2 dark:text-white">Latest Hadiths</h3>
-              <div className="w-16 h-1 bg-emerald-500 dark:bg-emerald-400 mx-auto"></div>
-            </div>
-            <p className="text-gray-600 dark:text-gray-300 text-center">Coming soon...</p>
-          </motion.div>
+      <main className="container mx-auto px-4 py-12 -mt-12 relative z-10">
+        {/* Section principale avec citation et horaires */}
+        <motion.section 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="mb-16"
+        >
+          <div className="grid md:grid-cols-2 gap-8">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <div className="relative bg-gradient-to-br from-amber-50 to-emerald-50 dark:from-emerald-900 dark:to-amber-900 rounded-2xl p-6 shadow-xl border border-amber-200 dark:border-emerald-800 h-full">
+                <div className="absolute top-0 right-0 w-24 h-24 opacity-20">
+                  <svg viewBox="0 0 100 100" className="text-amber-500 dark:text-emerald-400">
+                    <path 
+                      fill="currentColor" 
+                      d="M20,20 Q30,10 40,20 T60,20 T80,20 T100,20" 
+                      className="transform rotate-45"
+                    />
+                  </svg>
+                </div>
+                <DailyQuote quote={mockQuote} />
+              </div>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <div className="relative bg-gradient-to-br from-amber-50 to-emerald-50 dark:from-emerald-900 dark:to-amber-900 rounded-2xl p-6 shadow-xl border border-amber-200 dark:border-emerald-800 h-full">
+                <div className="absolute top-0 right-0 w-24 h-24 opacity-20">
+                  <svg viewBox="0 0 100 100" className="text-amber-500 dark:text-emerald-400">
+                    <path 
+                      fill="currentColor" 
+                      d="M20,20 Q30,10 40,20 T60,20 T80,20 T100,20" 
+                      className="transform rotate-45"
+                    />
+                  </svg>
+                </div>
+                <PrayerTimes times={mockPrayerTimes} city={selectedCity} />
+              </div>
+            </motion.div>
+          </div>
+        </motion.section>
+
+        {/* Sections fonctionnalités */}
+        <motion.section
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="mb-16"
+        >
+          <h2 className="text-2xl font-bold text-emerald-900 dark:text-emerald-300 mb-6 font-amiri text-center">
+            Explorez nos ressources
+          </h2>
           
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7 }}
-            className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 border border-emerald-100 dark:border-emerald-800 hover:border-emerald-300 dark:hover:border-emerald-700 transition-colors"
-          >
-            <div className="text-center mb-6">
-              <h3 className="text-2xl font-amiri font-semibold mb-2 dark:text-white">Daily Invocations</h3>
-              <div className="w-16 h-1 bg-emerald-500 dark:bg-emerald-400 mx-auto"></div>
-            </div>
-            <p className="text-gray-600 dark:text-gray-300 text-center">Coming soon...</p>
-          </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {featuredSections.map((section, index) => (
+              <motion.div
+                key={section.title}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 + index * 0.1 }}
+                whileHover={{ y: -5 }}
+                className="relative bg-gradient-to-br from-amber-50 to-emerald-50 dark:from-emerald-900 dark:to-amber-900 rounded-2xl p-6 shadow-xl border border-amber-200 dark:border-emerald-800 overflow-hidden"
+              >
+                <div className="absolute top-0 right-0 w-24 h-24 opacity-20">
+                  <svg viewBox="0 0 100 100" className="text-amber-500 dark:text-emerald-400">
+                    <path 
+                      fill="currentColor" 
+                      d="M20,20 Q30,10 40,20 T60,20 T80,20 T100,20" 
+                      className="transform rotate-45"
+                    />
+                  </svg>
+                </div>
+                
+                <div className="flex items-center mb-4">
+                  <div className="mr-3">
+                    {section.icon}
+                  </div>
+                  <h3 className="text-xl font-bold text-amber-800 dark:text-amber-200">
+                    {section.title}
+                  </h3>
+                </div>
+                
+                <p className="text-gray-700 dark:text-gray-300 mb-6">
+                  {section.description}
+                </p>
+                
+                <div className="flex flex-wrap gap-2">
+                  <motion.span
+                    whileHover={{ scale: 1.05 }}
+                    className="text-xs bg-amber-100 dark:bg-emerald-800 text-amber-800 dark:text-emerald-200 px-3 py-1 rounded-full flex items-center"
+                  >
+                    <ChevronRight className="h-3 w-3 mr-1" />
+                    Explorer
+                  </motion.span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.section>
+
+        {/* Section collections */}
+        <motion.section 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8 }}
+          className="mb-16"
+        >
+          <h2 className="text-2xl font-bold text-emerald-900 dark:text-emerald-300 mb-6 font-amiri text-center">
+            Collections principales
+          </h2>
           
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-            className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 border border-emerald-100 dark:border-emerald-800 hover:border-emerald-300 dark:hover:border-emerald-700 transition-colors"
-          >
-            <div className="text-center mb-6">
-              <h3 className="text-2xl font-amiri font-semibold mb-2 dark:text-white">Featured Videos</h3>
-              <div className="w-16 h-1 bg-emerald-500 dark:bg-emerald-400 mx-auto"></div>
-            </div>
-            <p className="text-gray-600 dark:text-gray-300 text-center">Coming soon...</p>
-          </motion.div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {[
+              'Sahih Al Bukhari',
+              'Sahih Muslim',
+              'رياض الصالحين',
+              'كتاب ذكر الموت',
+              'الأربعون في التصوف',
+              'المنتقى من صحيح مسلم'
+            ].map((topic, i) => (
+              <motion.div
+                key={topic}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.9 + i * 0.05 }}
+                whileHover={{ y: -5 }}
+                className="cursor-pointer bg-white dark:bg-gray-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/50 text-center rounded-xl p-4 shadow-lg border border-emerald-100 dark:border-emerald-800 transition-all"
+              >
+                <div className="bg-emerald-100 dark:bg-emerald-900/50 w-12 h-12 mx-auto rounded-full flex items-center justify-center mb-2">
+                  <BookOpen className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <span className="text-sm font-medium text-emerald-800 dark:text-emerald-300">
+                  {topic}
+                </span>
+              </motion.div>
+            ))}
+          </div>
+        </motion.section>
+      </main>
+
+      {/* Pied de page décoratif */}
+      <footer className="bg-emerald-900 dark:bg-emerald-950 text-white py-12">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-emerald-300 mb-4 font-amiri text-xl">
+            "Quiconque conserve pour ma communauté quarante hadiths..."
+          </p>
+          <p className="text-emerald-200">© {new Date().getFullYear()} IslamicHub - Tous droits réservés</p>
         </div>
-      </div>
+      </footer>
     </div>
   );
 };
