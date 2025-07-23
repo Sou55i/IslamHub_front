@@ -59,6 +59,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/croyance" element={<Croyance />} />
+              <Route path="/croyance/" element={<Croyance />} />
               <Route path="/hadiths" element={<Hadiths />} />
               <Route path="/hadith/albukhari" element={<AlBukhari />} />
               <Route path="/hadith/albukhari/part1" element={<part1 />} />
@@ -71,15 +72,14 @@ function App() {
               <Route path="/biographies" element={<Biographies />} />
               <Route path="/multimedia" element={<Multimedia />} />
               <Route path="/prayer-times" element={<PrayerTimesPage />} />
-              <Route path="/foi" element={<Croyance />} />
               <Route path="/ecoles" element={<Madhaheb />} />
               <Route path="/ecoles/Hanafi" element={<Hanafi />} />
               <Route path="/ecoles/Malikite" element={<Malikite />} />
               <Route path="/ecoles/Shafii" element={<Shafii />} />
               <Route path="/ecoles/Hanbalite" element={<Hanbalite />} />
-              <Route path="/foi/CroyanceEnDieu" element={<CroyanceEnDieu />} />
-              <Route path="/foi/CroireEnDieu/AttributsDeDieu" element={<AttributsDeDieu />} />
-              <Route path="/foi/CroyanceAnges" element={<CroyanceAnges />} />
+              <Route path="/croyance/CroyanceEnDieu" element={<CroyanceEnDieu />} />
+              <Route path="/croyance/CroireEnDieu/AttributsDeDieu" element={<AttributsDeDieu />} />
+              <Route path="/jurisprudence/Croyance/CroyanceAnges" element={<CroyanceAnges />} />
               <Route path="/foi/CreationMonde" element={<CreationMonde />} />
               <Route path="/foi/jourDernier" element={<jourDernier />} />
               <Route path="/foi/predestination" element={<predestination />} />

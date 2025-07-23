@@ -1,10 +1,11 @@
 import React, {useState, useEffect} from 'react';
 import {Link} from 'react-router-dom';
-import {Book, Heart, Users, Video, Clock, BookOpen, Moon, Sun, Menu, X, AlertTriangle, ShieldCheck} from 'lucide-react';
+import {Book, Heart, Users, Video, Clock, BookOpen, Moon, Sun, Menu, X, AlertTriangle, ShieldCheck, Bookmark} from 'lucide-react';
 import {useTheme} from '../context/ThemeContext';
 import moment from 'moment-hijri'; // Importer moment-hijri
 
 const navItems = [
+    {to: '/croyance', icon: Bookmark, label:'Croyance'},
     {to: '/hadiths', icon: Book, label: 'Hadiths'},
     {to: '/dhikrs', icon: Heart, label: 'Dhikrs'},
     {to: '/douaas', icon: Heart, label: 'Douaas'},
