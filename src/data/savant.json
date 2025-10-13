@@ -1,0 +1,46 @@
+[
+    {
+        "id": 1,
+        "sujet": "La non ressemblance de Allah",
+        "savant": "Abu Hanifah",
+        "texte_arabe": "يد الله فوق أيديهم، وليست كأيدي خلقه، ليست بجارحة، وهُو خالق الأيدي. ووجهُه ليس كوُجوه خلقه، وهُو خالق كُلِّ الوُجوه",
+        "texte_francais": " اليد (al-yad) attribué à Dieu n’a aucune ressemblance avec les mains des créatures. Ce n’est pas un membre. Il est le Créateur des mains. الوجه (al-wajh) attribué à Dieu n’a aucune ressemblance avec les visages des créatures. Il est le Créateur de tous les visages.",
+        "phonetique": null,
+        "explication": "Un autre argument qui montre que Abou Hanifah ne rejette pas toute interprétation, réside dans sa parole dans Al-Fiqh al-Absaṭ où il dit lorsqu’il parle de l’attribut de Dieu اليد (al-yad)",
+        "type_id": 1,
+        "tag": "Exemption, croyance, Attributs de Dieu"
+      },
+      {
+        "id": 2,
+        "sujet": "La non ressemblance de Allah",
+        "savant": "Abu Hanifah",
+        "texte_arabe": "فمَا ذكره الله تعالَى في القُرآن مِن ذكر الوجه واليد والنَّفس، فهُو له صفة بلا كيف",
+        "texte_francais": "ce que Dieu a cité dans le Qour’an à savoir الوجه, اليد et النَّفس, il s’agit d’attributs de Dieu sans comment",
+        "phonetique": null,
+        "explication": "Sa parole “sans comment” est une interprétation qui rejette le sens littéral, il s’agit d’une interprétation globale car il n’a pas précisé le sens voulu.",
+        "type_id": 1,
+        "tag": "Exemption, croyance, Attributs de Dieu"
+      },
+      {
+        "id": 2,
+        "sujet": "La non ressemblance de Allah",
+        "savant": "Abu Hanifah",
+        "texte_arabe": "ويراه المُؤمنون وهُم في الجنَّة بأعيُن رُؤوسهم بلا تشبيه ولا كيفيَّة ولا كمِّيَّة ولا يكون بينه وبين خلقه مسافة",
+        "texte_francais": " Les croyants Le verront de leurs yeux, sans aucune ressemblance avec les créatures, ni comment, ni quantité, et sans qu’il y ait une distance entre Lui et eux.",
+        "phonetique": null,
+        "explication": "Et dans Al-Fiqh al-Akbar il ajoute à propos de la vision de Dieu au Paradis",
+        "type_id": 1,
+        "tag": "Exemption, croyance, Attributs de Dieu"
+      },
+      {
+        "id": 3,
+        "sujet": "La non ressemblance de Allah",
+        "savant": "Al-Matouridiyy",
+        "texte_arabe": "بَلْ يَدَاهُ مَبْسُوطَتَانِ",
+        "texte_francais": "Par ailleurs, Al-Matouridiyy — qui était hanafite — a commenté le verset 64 de sourate Al-Mai’dah : En disant qu’il signifie : « Ses bienfaits sont largement répandus » c’est-à-dire que Dieu accorde ses bienfaits à qui Il veut et Il prive qui Il veut.",
+        "phonetique": null,
+        "explication": "Et il a ajouté : « Concernant les termes cités comme اليد, القبضة ou اليمين, il s’agit de Lui attribuer la force, la souveraineté et la puissance sur toute chose. » Cette interprétation montre que Al-Matouridiyy a bien compris que Abou Hanifah ne voulait pas exclure systématiquement toute interprétation du terme اليد par le bienfait car il l’a interprété lui-même par ce sens dans le verset de sourate Al-Mai’dah.",
+        "type_id": 1,
+        "tag": "Exemption, croyance, Attributs de Dieu"
+      }
+]

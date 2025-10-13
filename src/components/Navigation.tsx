@@ -6,9 +6,11 @@ import moment from 'moment-hijri'; // Importer moment-hijri
 
 const navItems = [
     {to: '/croyance', icon: Bookmark, label:'Croyance'},
+    {to: '/coran',icon: Bookmark, label: 'Coran'},
     {to: '/hadiths', icon: Book, label: 'Hadiths'},
     {to: '/dhikrs', icon: Heart, label: 'Dhikrs'},
     {to: '/douaas', icon: Heart, label: 'Douaas'},
+    {to: '/savants', icon: Users, label: 'Savants'},
     {to: '/jurisprudence', icon: BookOpen, label: 'Jurisprudence'},
     {to: '/biographies', icon: Users, label: 'Biographies'},
     {to: '/multimedia', icon: Video, label: 'Multimedia'},

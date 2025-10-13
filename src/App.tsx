@@ -5,7 +5,8 @@ import { Home } from './pages/Home';
 import { Hadiths } from './pages/Hadiths';
 import { Dhikrs } from './pages/Dhikrs';
 import { Douaas } from './pages/Douaas';
-import { Coran }  from './pages/Coran.tsx'
+import { Savants} from './pages/Savants';
+import { Corans }  from './pages/Coran.tsx'
 import { Jurisprudence } from './pages/Jurisprudence';
 import { Biographies } from './pages/Biographies';
 import { Multimedia } from './pages/Multimedia';
@@ -66,7 +67,8 @@ function App() {
               <Route path="/hadith/albukhari/part1" element={<part1 />} />
               <Route path="/dhikrs" element={<Dhikrs />} />
               <Route path="/douaas" element={<Douaas />} />
-              <Route path="/coran" element={<Coran />} />
+              <Route path="/coran" element={<Corans />} />
+              <Route path="/savants" element={<Savants />} />
               <Route path="/jurisprudence" element={<Jurisprudence />} />
               <Route path="/jurisprudence/repliques/athees/argumentation-globale" element={<ArgumentationGlobale />} />
               <Route path="/jurisprudence/repliques/athees/introduction" element={<Introduction />} />

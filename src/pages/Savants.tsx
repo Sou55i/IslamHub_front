@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, Search, Filter, X, Star, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import  coransData from '../data/coran.json';
+import savantsData from '../data/savant.json';
 
-interface Coran {
+interface Savant {
   id: number;
   sujet: string;
-  sourate: string;
+  savant: string;
   texte_arabe: string;
   texte_francais: string | null;
   phonetique: string | null;
@@ -15,7 +15,7 @@ interface Coran {
   tag: string;
 }
 
-const CoranCard: React.FC<{ coran: Coran; onClick: () => void }> = ({ coran, onClick }) => (
+const SavantCard: React.FC<{ savant: Savant; onClick: () => void }> = ({ savant, onClick }) => (
   <motion.div 
     whileHover={{ scale: 1.01 }}
     onClick={onClick}
@@ -32,36 +32,32 @@ const CoranCard: React.FC<{ coran: Coran; onClick: () => void }> = ({ coran, onC
       </svg>
     </div>
     
-    {coran.sujet && (
+    {savant.sujet && (
       <div className="flex items-center">
         <Star className="h-5 w-5 text-amber-500 dark:text-amber-300 mr-2" />
         <h3 className="text-xl font-bold text-amber-800 dark:text-amber-200 font-amiri">
-          {coran.sujet}
+          {savant.sujet}
         </h3>
       </div>
     )}
     
-    {coran.sourate && (
-      <div className="text-sm text-emerald-700 dark:text-emerald-300 italic">
-        Sourate: {coran.sourate}
-      </div>
-    )}
+    
     
     <div className="bg-white dark:bg-gray-800/80 p-4 rounded-lg border border-amber-100 dark:border-emerald-800 flex-grow">
       <p className="text-2xl text-gray-900 dark:text-white font-arabic leading-loose text-right line-clamp-3">
-        {coran.texte_arabe}
+        {savant.texte_arabe}
       </p>
       
-      {coran.texte_francais && (
+      {savant.texte_francais && (
         <div className="mt-4 pl-4 border-l-4 border-amber-300 dark:border-emerald-600 line-clamp-2">
           <p className="text-sm text-amber-700 dark:text-amber-200 mb-1">Signification :</p>
-          <p className="text-gray-700 dark:text-gray-300">{coran.texte_francais}</p>
+          <p className="text-gray-700 dark:text-gray-300">{savant.texte_francais}</p>
         </div>
       )}
     </div>
 
     <div className="flex flex-wrap gap-2">
-      {coran.tag.split(',').map(tag => (
+      {savant.tag.split(',').map(tag => (
         <motion.span
           key={tag.trim()}
           whileHover={{ scale: 1.05 }}
@@ -81,11 +77,11 @@ const CoranCard: React.FC<{ coran: Coran; onClick: () => void }> = ({ coran, onC
   </motion.div>
 );
 
-const CoranModal: React.FC<{ 
-  coran: Coran | null; 
+const SavantModal: React.FC<{ 
+  savant: Savant | null; 
   onClose: () => void 
-}> = ({ coran, onClose }) => {
-  if (!coran) return null;
+}> = ({ savant, onClose }) => {
+  if (!savant) return null;
 
   return (
     <motion.div 
@@ -112,48 +108,50 @@ const CoranModal: React.FC<{
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-amber-800 dark:text-amber-200 font-amiri">
-                {coran.sujet}
+                {savant.sujet}
               </h2>
-              {coran.sourate && (
+              {savant.savant && (
                 <p className="text-emerald-700 dark:text-emerald-400 mt-1">
-                  Rapporteur: {coran.sourate}
+                  Savant: {savant.savant}
                 </p>
               )}
+             
               
             </div>
+            
             
             
           </div>
           
           <div className="bg-amber-50 dark:bg-gray-700 p-6 rounded-lg">
             <p className="text-3xl text-gray-900 dark:text-white font-arabic leading-loose text-right">
-              {coran.texte_arabe}
+              {savant.texte_arabe}
             </p>
             
-            {coran.phonetique && (
+            {savant.phonetique && (
               <div className="mt-6 bg-white dark:bg-gray-600 p-4 rounded">
                 <p className="text-sm text-amber-700 dark:text-amber-300 mb-2">Phonétique:</p>
-                <p className="text-gray-700 dark:text-gray-200">{coran.phonetique}</p>
+                <p className="text-gray-700 dark:text-gray-200">{savant.phonetique}</p>
               </div>
             )}
             
-            {coran.texte_francais && (
+            {savant.texte_francais && (
               <div className="mt-6 pl-4 border-l-4 border-emerald-500">
                 <p className="text-sm text-emerald-700 dark:text-emerald-400 mb-2">Traduction:</p>
-                <p className="text-gray-700 dark:text-gray-300">{coran.texte_francais}</p>
+                <p className="text-gray-700 dark:text-gray-300">{savant.texte_francais}</p>
               </div>
             )}
           </div>
           
-          {coran.explication && (
+          {savant.explication && (
             <div className="mt-6 bg-emerald-50 dark:bg-emerald-900/30 p-6 rounded-lg">
               <p className="text-lg font-bold text-emerald-800 dark:text-emerald-300 mb-3">Explication:</p>
-              <p className="text-gray-700 dark:text-gray-300">{coran.explication}</p>
+              <p className="text-gray-700 dark:text-gray-300">{savant.explication}</p>
             </div>
           )}
           
           <div className="flex flex-wrap gap-2">
-            {coran.tag.split(',').map(tag => (
+            {savant.tag.split(',').map(tag => (
               <span
                 key={tag.trim()}
                 className="text-xs bg-amber-100 dark:bg-emerald-800 text-amber-800 dark:text-emerald-200 px-3 py-1 rounded-full"
@@ -168,13 +166,13 @@ const CoranModal: React.FC<{
   );
 };
 
-export const Corans: React.FC = () => {
+export const Savants: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [allTags, setAllTags] = useState<string[]>([]);
-  const [filteredCorans, setFilteredCorans] = useState<Coran[]>(coransData);
-  const [selectedCoran, setSelectedCoran] = useState<Coran | null>(null);
+  const [filteredSavants, setFilteredSavants] = useState<Savant[]>(savantsData);
+  const [selectedSavant, setSelectedSavant] = useState<Savant | null>(null);
 
   const topics = [
     'Sahih Al Bukhari',
@@ -243,8 +241,8 @@ export const Corans: React.FC = () => {
  // Extraction des tags uniques
 useEffect(() => {
   const tags = new Set<string>();
-  coransData.forEach(coran => {
-    coran.tag.split(',')
+  savantsData.forEach(savant => {
+    savant.tag.split(',')
       .map(t => t.trim())
       .filter(t => t.length > 0)
       .forEach(tag => tags.add(tag));
@@ -255,13 +253,13 @@ useEffect(() => {
 
   // Filtrage des hadiths
   useEffect(() => {
-    let results = [...coransData];
+    let results = [...savantsData];
 
     // Filtre par tag exact
     if (selectedTag) {
       const tagToFind = selectedTag.toLowerCase();
-      results = results.filter(hadith => 
-        hadith.tag.split(',')
+      results = results.filter(savant => 
+        savant.tag.split(',')
           .map(t => t.trim().toLowerCase())
           .includes(tagToFind)
       );
@@ -270,17 +268,17 @@ useEffect(() => {
     // Filtre par texte
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase().trim();
-      results = results.filter(coran => 
-        coran.texte_arabe.toLowerCase().includes(term) ||
-        (coran.texte_francais?.toLowerCase().includes(term)) ||
-        (coran.explication?.toLowerCase().includes(term)) ||
-        coran.sujet.toLowerCase().includes(term) ||
-        (coran.sourate?.toLowerCase().includes(term))
+      results = results.filter(savant => 
+        savant.texte_arabe.toLowerCase().includes(term) ||
+        (savant.texte_francais?.toLowerCase().includes(term)) ||
+        (savant.explication?.toLowerCase().includes(term)) ||
+        savant.sujet.toLowerCase().includes(term) ||
+        (savant.rapporteur?.toLowerCase().includes(term))
       );
     }
 
-    setFilteredCorans(results);
-  }, [searchTerm, selectedTag, coransData]);
+    setFilteredSavants(results);
+  }, [searchTerm, selectedTag, savantsData]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-emerald-50 dark:from-gray-900 dark:to-emerald-950">
@@ -299,10 +297,10 @@ useEffect(() => {
             animate={{ scale: 1 }}
             className="text-5xl md:text-6xl font-bold text-white mb-6 font-amiri"
           >
-            Le noble Quran
+            Paroles de savants
           </motion.h1>
           <p className="text-xl text-emerald-200 max-w-3xl mx-auto">
-            Un recueil des versets du Quran
+            Explorez les paroles des savanst de Ahlu Sounnah
           </p>
         </div>
       </motion.header>
@@ -400,7 +398,7 @@ useEffect(() => {
         {/* Résultats */}
         <section className="pb-16">
           <AnimatePresence>
-            {filteredCorans.length === 0 ? (
+            {filteredSavants.length === 0 ? (
               <motion.div
                 key="no-results"
                 initial={{ opacity: 0 }}
@@ -434,21 +432,21 @@ useEffect(() => {
                   animate={{ opacity: 1 }}
                   className="text-sm font-medium text-emerald-700 dark:text-emerald-400 mb-6"
                 >
-                  {filteredCorans.length} hadith{filteredCorans.length > 1 ? 's' : ''} trouvé{filteredCorans.length > 1 ? 's' : ''}
+                  {filteredSavants.length} hadith{filteredSavants.length > 1 ? 's' : ''} trouvé{filteredSavants.length > 1 ? 's' : ''}
                 </motion.p>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  {filteredCorans.map((coran, index) => (
+                  {filteredSavants.map((savant, index) => (
                     <motion.div
-                      key={`${coran.id}-${index}`}
+                      key={`${savant.id}-${index}`}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05 }}
                       layout
                     >
-                      <CoranCard 
-                        coran={coran} 
-                        onClick={() => setSelectedCoran(coran)}
+                      <SavantCard 
+                        savant={savant} 
+                        onClick={() => setSelectedSavant(savant)}
                       />
                     </motion.div>
                   ))}
@@ -470,9 +468,9 @@ useEffect(() => {
       </footer>
 
       {/* Modal */}
-      <CoranModal 
-        coran={selectedCoran} 
-        onClose={() => setSelectedCoran(null)} 
+      <SavantModal 
+        savant={selectedSavant} 
+        onClose={() => setSelectedSavant(null)} 
       />
     </div>
   );

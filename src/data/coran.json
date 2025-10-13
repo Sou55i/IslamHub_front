@@ -37,5 +37,18 @@
     "type_id": 1,
     "tag": "croyance"
 
-    }
+    },
+    {
+    
+        "id": 1,
+        "sujet": "Croyance ",
+        "sourate": null,
+        "texte_arabe": "وَهُوَ مَعَكُمۡ أَيۡنَ مَا كُنتُمۡۚ",
+        "texte_francais": "Cela veut dire qu’Il sait toute chose par Sa science.",
+        "phonetique": "Wahouwa ma^akoum ‘ayna ma kountoum",
+        "explication": "C’est ce qu’ont dit Ath-Thawriyy, Ach-Chafi^iyy, Ahmad, Malik et bien d’autres",
+        "type_id": 1,
+        "tag": "croyance"
+    
+        }
 ]
