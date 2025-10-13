@@ -635,9 +635,70 @@
     "explication": "C'est-à-dire une distance parcourue en soixante-dix ans de chute pour atteindre le fond de l’enfer, le fond de l’enfer étant réservé aux mécréants.",
     "type_id": 1,
     "tag": "mécréance, apostasie, enfer"
+  },
+  {
+    "id": 1,
+    "sujet": "Meilleur parole",
+    "rapporteur": "Imam Malik dans Al-Mouwata",
+    "narrateur": null,
+    "statut": "Sahih",
+    "texte_arabe": "أَفْضَلُ مَا قُلْتُ أَنَا وَالنَّبِيُّونَ مِنْ قَبْلِي لا إِلهَ إِلَّا اللَّهُْ",
+    "texte_francais": "La meilleure des paroles que j’ai dite, moi ainsi que les prophètes avant moi c’est لا إِلَهَ إِلَّا اللَّهُ “Il n’est de Dieu que Dieu.",
+    "phonetique": null,
+    "explication": null,
+    "type_id": 1,
+    "tag": "Révélation, croyance, parole"
+  },
+  {
+    "id": 1,
+    "sujet": "Meilleur des oeuvres",
+    "rapporteur": "Al-Boukhariyy",
+    "narrateur": null,
+    "statut": "Sahih",
+    "texte_arabe": " إِيمَانٌ بِاللَّهِ وَرَسُولِهُِْ",
+    "texte_francais": "La foi en Dieu et en Son messager.",
+    "phonetique": null,
+    "explication": "A propos de la croyance en Dieu et en son messager citons le حديث hadith suivant  [rapporté par Al-Boukhariyy]:  Le Messager de Dieu صلَّى الله عليه وسلم fut interrogé : « Quelle est la meilleure des œuvres ? », Donc la plus honorable et la meilleure des œuvres dans l’absolu, c’est d’avoir la foi correcte en Dieu et en Son messager. Et il se peut que quelqu’un te pose la question : « Mais il y a des حديث hadith dont le sens apparent est que la meilleure des œuvres, c’est la prière dans son temps. » En fait, on a su que la foi précède la prière dans le degré à partir d’autres حديث hadith parce que le Prophète صلَّى الله عليه وسلم, sa Loi toute entière est comme un seul énoncé, comme un tout qui se complète, c’est-à-dire qu’on a su que la foi est au-devant à partir de l’ensemble de ce qu’a amené le Prophète عليه الصلاة والسلام.",
+    "type_id": 1,
+    "tag": "Oeuvres, croyance, parole"
+  },
+  {
+    "id": 1,
+    "sujet": "Mawlid",
+    "rapporteur": "Ahmad et par Al-Bayhaqiyy dans Ad-Dala’il",
+    "narrateur": null,
+    "statut": "Sahih",
+    "texte_arabe":  "ذاكَ يَوْمٌ وُلِدْتُ فِيهِ وأُنْزِلَ عَلَيَّ فِيهُِِْ",
+    "texte_francais": "C’est un jour dans lequel je suis né et dans lequel la révélation a commencé à descendre sur moi.",
+    "phonetique": "dhaka yawmoun woulidtou fihi wa‘ounzila ^alayya fih",
+    "explication": "C'est la réponse de notre bien aimé prophète lorsqu'il a été interrogé sur son jeûne les lundis",
+    "type_id": 1,
+    "tag": "Mawlid"
+  },
+  {
+    "id": 1,
+    "sujet": "Bonne croyance",
+    "rapporteur": "At–Tabaraniyy",
+    "narrateur": null,
+    "statut": "Sahih",
+    "texte_arabe":  " الْمُتَمَسِّكُ بِسُنَّتِي – أَيْ شَرِيعَتِي مِنَ العَقِيدَةِ والأَحْكامِ – عِنْدَ فَسادِ أُمَّتِي لَهُ أَجْرُ شَهِيدٍُِِْ",
+    "texte_francais": "Celui qui s’attachera à ma voie – c’est-à-dire à ma chari^ah, à ce qu’elle comporte comme croyances et comme jugements pratiques – lorsque le mal se propagera au sein de ma communauté, aura la récompense d’un martyr.",
+    "phonetique": "al-moutamassikou bi-sounnati ^inda façadi ‘oummati lahou ‘ajrou chahid",
+    "explication": null,
+    "type_id": 1,
+    "tag": "Bonne croyance"
+  },
+  {
+    "id": 1,
+    "sujet": "croyance, ta’wil, Qour’an",
+    "rapporteur": "At–Tabaraniyy",
+    "narrateur": null,
+    "statut": "Sahih",
+    "texte_arabe": "الْقُرْءانُ حُجَّةٌ لكَ أَوْ عَلَيكَ",
+    "texte_francais": "Le Qour’an est soit une preuve en ta faveur, soit une preuve contre toi",
+    "phonetique": "Al-Qour’anou houjjatoun laka ‘aw ^alayka",
+    "explication": "Ainsi, celui qui donne une mauvaise interprétation des versets du Qour’an, cela se retournera contre lui.\n\n",
+    "type_id": 1,
+    "tag": "Croyance, ta’wil, Qour’an"
   }
-
-
-
-
 ]

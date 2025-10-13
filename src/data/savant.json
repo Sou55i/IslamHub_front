@@ -42,5 +42,38 @@
         "explication": "Et il a ajouté : « Concernant les termes cités comme اليد, القبضة ou اليمين, il s’agit de Lui attribuer la force, la souveraineté et la puissance sur toute chose. » Cette interprétation montre que Al-Matouridiyy a bien compris que Abou Hanifah ne voulait pas exclure systématiquement toute interprétation du terme اليد par le bienfait car il l’a interprété lui-même par ce sens dans le verset de sourate Al-Mai’dah.",
         "type_id": 1,
         "tag": "Exemption, croyance, Attributs de Dieu"
-      }
+      },
+  {
+    "id": 2,
+    "sujet": "La non ressemblance de Allah",
+    "savant": "Imam At–Tahawiyy ",
+    "texte_arabe": "وَمَنْ وَصَفَ اللهَ بِمَعْنًى مِنْ مَعَانِي البَشَرِ فَقَدْ كَفَر",
+    "texte_francais": "Celui qui qualifie Dieu par une des attributs des humains aura mécru » c’est-à-dire qu’il n’est pas musulman.",
+    "phonetique": null,
+    "explication": null,
+    "type_id": 1,
+    "tag": "Exemption, croyance, Attributs de Dieu"
+  },
+  {
+    "id": 2,
+    "sujet": "La non ressemblance de Allah",
+    "savant": "Imam Ach-Chafi^iyy ",
+    "texte_arabe": "مَنِ انْتَهَضَ لِمَعرِفةِ مُدَبِّرِهِ فَانتَهَى إِلى مَوجُودٍ يَتَصَوَّرُهُ بِفِكرِهِ فَهُوَ مُشَبِّه ومَنِ انتَهَى إِلى العَدَمِ الصِّرْفِ فهُوَ مُعَطِّل ومَنِ انتَهَى إِلى مَوجُودٍ واعْتَرَفَ بِالعَجْزِ عَنْ إِدْراكِهِ فَهُوَ مُوَحِّد",
+    "texte_francais": "Celui qui tente de connaître son Créateur et qui aboutit à un être qu’il imagine par son esprit, c’est un assimilationniste et Celui qui aboutit à l’inexistence du Créateur c’est un athée. Et celui qui aboutit à l’existence d’un Créateur en reconnaissant qu’il est incapable d’en connaître la réalité, c’est un croyant en l’Unicité de Dieu.",
+    "phonetique": null,
+    "explication": "Reprenons phrase par phrase la parole de l’Imam Ach-Chafi^iyy\n\n  « مَنِ انْتَهَضَ لِمَعرِفةِ مُدَبِّرِهِ » « Celui qui tente de connaître son Créateur » c’est-à-dire ceux qui disent vouloir parvenir par la réflexion à connaître le Créateur, notre maître Ach-Chafi^iyy les a classés en trois catégories,\n\n 1. « فَانتَهَى إِلى مَوجُودٍ يَتَصَوَّرُهُ بِفِكرِهِ فَهُوَ مُشَبِّه » « et qui aboutit à un être qu’il imagine par son esprit, c’est un mouchabbih –assimilationniste– » C’est-à-dire qu’après avoir réfléchi, il lui a semblé que Dieu aurait une forme ou une image, et il a adoré cette image. Est-ce qu’on dit qu’il a adoré Dieu ? Non, il a adoré autre que Dieu, il a assimilé Dieu aux créatures, c’est un mouchabbih.\n 2. Et il a dit : « ومَنِ انتَهَى إِلى العَدَمِ الصِّرْفِ فهُوَ مُعَطِّل » « Celui qui aboutit à l’inexistence du Créateur c’est un athée. »\n 3. Et il poursuit : «ومَنِ انتَهَى إِلى مَوجُودٍ واعْتَرَفَ بِالعَجْزِ عَنْ إِدْراكِهِ فَهُوَ مُوَحِّد» « Et celui qui aboutit à l’existence d’un Créateur en reconnaissant qu’il est incapable d’en connaître la réalité c’est à dire qu’Il existe sans comment ni d’endroit, c’est un croyant en l’Unicité de Dieu –.», c’est cela le tawhid.",
+    "type_id": 1,
+    "tag": "Exemption, croyance, Attributs de Dieu"
+  },
+  {
+    "id": 2,
+    "sujet": "L'interpretation Qour’an",
+    "savant": "Ahmad Ar-Rifa^iyy",
+    "texte_arabe":"صونو عقائدكم من التّمسّك بظاهر ما تشابه من الكتاب والسّنّة فإنّ ذالك من أصول الكفر\n\n",
+    "texte_francais": "Préservez vos croyances de l’attachement au sens apparent de ce qui n’est pas explicite parmi les expressions du Livre [du Qour’an] et de la Sounnah car c’est une des sources de mécréance.",
+    "phonetique": "sounou ^aqa’idakoum mina t-tamassouki bi dhahiri ma tachabaha mina l-kitabi was-sounnah ; fa’inna dhalika min ‘ouçouli l-koufr",
+    "explication": "Ahmad Ar-Rifa^iyy qui est un spécialiste de l’exégèse du Qour’an a dit dans son livre “Al-bourhanou l-mou’ayyad”",
+    "type_id": 1,
+    "tag": "croyance, ta’wil, Qour’an"
+  }
 ]

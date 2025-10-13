@@ -50,5 +50,18 @@
         "type_id": 1,
         "tag": "croyance"
     
-        }
+        },
+    {
+
+        "id": 1,
+        "sujet": "Croyance, ta’wil",
+        "sourate": "Al-Baqarah / 26",
+        "texte_arabe": "يُضِلُّ بِهِ كَثِيرًا وَيَهْدِي بِهِ كَثِيرًاۡۚ",
+        "texte_francais": "Allah égare par le Qour’an beaucoup de gens et Il guide par lui beaucoup de gens.",
+        "phonetique": "Youdillou bihi kathiran wayahdi bihi kathira",
+        "explication": "Ainsi, Allah a voulu de toute éternité que certains soient guidés par le Qour’an et que d’autres soient égarés par leur mauvaise interprétation des versets non explicites du Qour’an.\n\n",
+        "type_id": 1,
+        "tag": "croyance, ta’wil, Qour’an"
+
+    }
 ]
