@@ -10,6 +10,7 @@ interface Douaa {
   explication: string;
   type_id: number;
   commentaire: string;
+  tag: string;
   
 }
 
