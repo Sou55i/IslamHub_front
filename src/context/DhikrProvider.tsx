@@ -1,43 +1,32 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import api from '../services/api';
-
-interface Dhikr {
-  id: number;
-  sujet: string;
-  texte_arabe: string;
-  texte_francais: string;
-  phonetique: string;
-  explication: string;
-  type_id: number;
-  commentaire: string;
-  
-}
+import { dataService } from '../services/DataService';
+import type { Dhikr } from '../types';
 
 interface DhikrContextType {
   dhikrs: Dhikr[];
   fetchDhikrs: () => Promise<void>;
-  isLoading: boolean; // Ajout d'un état de chargement
-  error: string | null; // Ajout d'une gestion d'erreur
+  isLoading: boolean;
+  error: string | null;
 }
 
 const DhikrContext = createContext<DhikrContextType | undefined>(undefined);
 
 export const DhikrProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [dhikrs, setDhikrs] = useState<Dhikr[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true); // État de chargement
-  const [error, setError] = useState<string | null>(null); // Gestion des erreurs
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchDhikrs = async () => {
     setIsLoading(true);
-    setError(null); // Réinitialiser l'erreur avant chaque requête
+    setError(null);
     try {
-      const response = await api.get('/dhikrs');
+      const response = await dataService.getDhikrs();
       setDhikrs(response.data);
-    } catch (error) {
-      console.error('Error fetching dhikrs:', error);
-      setError('Failed to fetch dhikrs. Please try again later.'); // Message d'erreur
+    } catch (err) {
+      console.error('Error fetching dhikrs:', err);
+      setError('Erreur lors du chargement des dhikrs.');
     } finally {
-      setIsLoading(false); // Arrêter le chargement une fois la requête terminée
+      setIsLoading(false);
     }
   };
 

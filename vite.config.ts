@@ -8,4 +8,30 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+
+  // Optimisation du build
+  build: {
+    // Code splitting pour réduire la taille du bundle initial
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Séparer les librairies volumineuses
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-animation': ['framer-motion'],
+          'vendor-utils': ['date-fns', 'moment-hijri', 'axios'],
+          'vendor-ui': ['lucide-react'],
+        },
+      },
+    },
+    // Limite d'avertissement pour la taille des chunks
+    chunkSizeWarningLimit: 500,
+    // Source maps désactivés en production
+    sourcemap: false,
+  },
+
+  // Optimisation du serveur de développement
+  server: {
+    port: 3000,
+    open: true,
+  },
 });
