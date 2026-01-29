@@ -1,24 +1,19 @@
 import React, {useState, useEffect} from 'react';
 import {Link} from 'react-router-dom';
-import {Book, Heart, Users, Video, Clock, BookOpen, Moon, Sun, Menu, X, AlertTriangle, ShieldCheck, Bookmark} from 'lucide-react';
+import {Book, Heart, Users, Video, Clock, BookOpen, Moon, Sun, Menu, X, Bookmark} from 'lucide-react';
 import {useTheme} from '../context/ThemeContext';
 import moment from 'moment-hijri'; // Importer moment-hijri
 
 const navItems = [
-    {to: '/croyance', icon: Bookmark, label:'Croyance'},
-    {to: '/coran',icon: Bookmark, label: 'Coran'},
+    {to: '/coran', icon: Bookmark, label: 'Coran'},
     {to: '/hadiths', icon: Book, label: 'Hadiths'},
     {to: '/dhikrs', icon: Heart, label: 'Dhikrs'},
     {to: '/douaas', icon: Heart, label: 'Douaas'},
     {to: '/savants', icon: Users, label: 'Savants'},
-    {to: '/jurisprudence', icon: BookOpen, label: 'Jurisprudence'},
     {to: '/biographies', icon: Users, label: 'Biographies'},
     {to: '/multimedia', icon: Video, label: 'Multimedia'},
     {to: '/ecoles', icon: BookOpen, label: 'Madhaheb'},
-    {to: '/Repliques', icon: ShieldCheck, label: 'Répliques'},
-    {to: '/Mise-en-garde', icon: AlertTriangle, label: 'Mise en garde'},
-    {to: '/prayer-times', icon: Clock, label: 'Prayer Times'},
-
+    {to: '/prayer-times', icon: Clock, label: 'Horaires'},
 ];
 
 export const Navigation: React.FC = () => {

@@ -1,9 +1,43 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.karim.islamhub',
-  appName: 'islamic-website',
-  webDir: 'dist'
+  appId: 'com.islamhub.app',
+  appName: 'IslamHub',
+  webDir: 'dist',
+
+  // Configuration Android
+  android: {
+    // Couleur de la barre de status
+    backgroundColor: '#065f46', // emerald-800
+    // Permettre le contenu mixte (HTTP/HTTPS)
+    allowMixedContent: true,
+  },
+
+  // Configuration du serveur
+  server: {
+    // Utiliser la navigation native pour une meilleure performance
+    androidScheme: 'https',
+    // Nettoyer le cache au démarrage (dev uniquement)
+    cleartext: false,
+  },
+
+  // Plugins
+  plugins: {
+    // Configuration du Splash Screen
+    SplashScreen: {
+      launchShowDuration: 2000,
+      launchAutoHide: true,
+      backgroundColor: '#065f46',
+      androidScaleType: 'CENTER_CROP',
+      showSpinner: true,
+      spinnerColor: '#ffffff',
+    },
+    // Configuration du clavier
+    Keyboard: {
+      resize: 'body',
+      resizeOnFullScreen: true,
+    },
+  },
 };
 
 export default config;
