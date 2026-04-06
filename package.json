@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@capacitor/android": "^7.4.3",
-    "@capacitor/cli": "^7.4.3",
+    "@capacitor/cli": "^7.6.1",
     "@capacitor/core": "^7.4.3",
     "@supabase/supabase-js": "^2.93.3",
     "axios": "^1.6.7",
