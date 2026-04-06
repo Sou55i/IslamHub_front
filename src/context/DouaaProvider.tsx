@@ -6,9 +6,8 @@ interface Douaa {
   sujet: string;
   texte_arabe: string;
   texte_francais: string;
-  phonetique: string;
+  phonétique: string;
   explication: string;
-  type_id: number;
   commentaire: string;
   tag: string;
   

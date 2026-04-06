@@ -28,7 +28,7 @@
 Créer un fichier `import-data.js`:
 
 ```javascript
-const { createClient } = require('@supabase/supabase-js');
+const {createClient} = require('@supabase/supabase-js');
 
 // Remplacer par vos valeurs
 const SUPABASE_URL = 'https://xxxxx.supabase.co';
@@ -41,45 +41,45 @@ const hadithsData = require('../src/data/hadith.json');
 const coranData = require('../src/data/coran.json');
 const dhikrData = require('../src/data/dhikr.json');
 const douaaData = require('../src/data/douaa.json');
-const savantData = require('../src/data/savant.json');
+const savantData = require('./parole.json');
 
 async function importData() {
-  console.log('Importing hadiths...');
-  const { error: hadithError } = await supabase
-    .from('hadiths')
-    .insert(hadithsData);
-  if (hadithError) console.error('Hadith error:', hadithError);
-  else console.log('Hadiths imported!');
+    console.log('Importing hadiths...');
+    const {error: hadithError} = await supabase
+        .from('hadiths')
+        .insert(hadithsData);
+    if (hadithError) console.error('Hadith error:', hadithError);
+    else console.log('Hadiths imported!');
 
-  console.log('Importing coran...');
-  const { error: coranError } = await supabase
-    .from('coran')
-    .insert(coranData);
-  if (coranError) console.error('Coran error:', coranError);
-  else console.log('Coran imported!');
+    console.log('Importing coran...');
+    const {error: coranError} = await supabase
+        .from('coran')
+        .insert(coranData);
+    if (coranError) console.error('Coran error:', coranError);
+    else console.log('Coran imported!');
 
-  console.log('Importing dhikrs...');
-  const { error: dhikrError } = await supabase
-    .from('dhikrs')
-    .insert(dhikrData);
-  if (dhikrError) console.error('Dhikr error:', dhikrError);
-  else console.log('Dhikrs imported!');
+    console.log('Importing dhikrs...');
+    const {error: dhikrError} = await supabase
+        .from('dhikrs')
+        .insert(dhikrData);
+    if (dhikrError) console.error('Dhikr error:', dhikrError);
+    else console.log('Dhikrs imported!');
 
-  console.log('Importing douaas...');
-  const { error: douaaError } = await supabase
-    .from('douaas')
-    .insert(douaaData);
-  if (douaaError) console.error('Douaa error:', douaaError);
-  else console.log('Douaas imported!');
+    console.log('Importing douaas...');
+    const {error: douaaError} = await supabase
+        .from('douaas')
+        .insert(douaaData);
+    if (douaaError) console.error('Douaa error:', douaaError);
+    else console.log('Douaas imported!');
 
-  console.log('Importing savants...');
-  const { error: savantError } = await supabase
-    .from('savants')
-    .insert(savantData);
-  if (savantError) console.error('Savant error:', savantError);
-  else console.log('Savants imported!');
+    console.log('Importing savants...');
+    const {error: savantError} = await supabase
+        .from('savants')
+        .insert(savantData);
+    if (savantError) console.error('Savant error:', savantError);
+    else console.log('Savants imported!');
 
-  console.log('Done!');
+    console.log('Done!');
 }
 
 importData();

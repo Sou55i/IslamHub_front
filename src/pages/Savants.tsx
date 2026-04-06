@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, Search, Filter, X, Star, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import savantsData from '../data/savant.json';
+import savantsData from '../data/parole.json';
 
 interface Savant {
   id: number;

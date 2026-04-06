@@ -4,14 +4,14 @@ import api from '../services/api';
 interface Hadith {
   id: number;
   sujet: string;
-  raporteur: string;
+  rapporteur: string;
   narrateur: string;
   statut: string;
   texte_arabe: string;
   texte_francais: string;
-  phonetique: string;
+  phonétique: string;
   explication: string;
-  type_id: number;
+  tag: string;
 }
 
 interface HadithContextType {

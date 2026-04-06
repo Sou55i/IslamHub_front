@@ -24,7 +24,7 @@ import hadithsData from '../data/hadith.json';
 import coranData from '../data/coran.json';
 import dhikrData from '../data/dhikr.json';
 import douaaData from '../data/douaa.json';
-import savantData from '../data/savant.json';
+import savantData from '../data/parole.json';
 
 // Configuration - Changer cette valeur quand on passe à Supabase
 const USE_LOCAL_DATA = true;

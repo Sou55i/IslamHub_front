@@ -63,7 +63,7 @@ async function main() {
   const coran = loadJSON('coran.json');
   const dhikrs = loadJSON('dhikr.json');
   const douaas = loadJSON('douaa.json');
-  const savants = loadJSON('savant.json');
+  const savants = loadJSON('parole.json');
 
   // Importer chaque table
   await importTable('hadiths', hadiths);
