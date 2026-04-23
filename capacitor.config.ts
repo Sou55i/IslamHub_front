@@ -1,7 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.islamhub.app',
+  // Doit correspondre exactement à applicationId dans android/app/build.gradle
+  appId: 'com.karim.islamhub',
   appName: 'IslamHub',
   webDir: 'dist',
 
