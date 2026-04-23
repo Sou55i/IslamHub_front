@@ -1,7 +1,3 @@
-/**
- * DataService - Service unifié pour la gestion des données
- */
-
 import type {
   Hadith,
   Coran,
@@ -12,41 +8,15 @@ import type {
   PaginationParams,
 } from '../types';
 
-// Helper pour récupérer l'URL de l'API
-const getApiUrl = (): string => {
-  // Vérifier d'abord les variables d'environnement
-  let apiUrl = '';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
-  if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) {
-    apiUrl = import.meta.env.VITE_API_URL;
-  } else if (typeof process !== 'undefined' && process.env?.REACT_APP_API_URL) {
-    apiUrl = process.env.REACT_APP_API_URL;
-  }
-
-  // Si pas de variable ou en développement, utiliser localhost
-  if (!apiUrl || apiUrl.includes('votre-api.com')) {
-    apiUrl = 'http://localhost:3001/api';
-  }
-
-  console.log('🔧 API URL configurée:', apiUrl);
-  return apiUrl;
-};
-
-const API_BASE_URL = getApiUrl();
-
-// ==========================================
-// Client API
-// ==========================================
+function sanitizeInput(value: string): string {
+  return value.trim().slice(0, 300).replace(/[<>"']/g, '');
+}
 
 class ApiClient {
-  private async request<T>(
-      endpoint: string,
-      options: RequestInit = {}
-  ): Promise<T> {
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
-
-    console.log(`📡 API Request: ${options.method || 'GET'} ${url}`);
-
     try {
       const response = await fetch(url, {
         ...options,
@@ -55,18 +25,11 @@ class ApiClient {
           ...options.headers,
         },
       });
-
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`❌ API Error ${response.status}:`, errorText);
         throw new Error(`API Error: ${response.status} ${response.statusText}`);
       }
-
-      const data = await response.json();
-      console.log(`✅ API Response: ${url}`, data);
-      return data;
+      return response.json();
     } catch (error) {
-      console.error(`❌ API request failed for ${endpoint}:`, error);
       throw error;
     }
   }
@@ -75,28 +38,16 @@ class ApiClient {
     return this.request<T>(endpoint, { method: 'GET' });
   }
 
-  async getWithParams<T>(
-      endpoint: string,
-      params: Record<string, any>
-  ): Promise<T> {
-    // Filtrer les paramètres undefined ou null
+  async getWithParams<T>(endpoint: string, params: Record<string, unknown>): Promise<T> {
     const filteredParams = Object.fromEntries(
-        Object.entries(params).filter(([_, value]) => value != null && value !== '')
+      Object.entries(params).filter(([, value]) => value != null && value !== '')
     );
-    const queryString = new URLSearchParams(
-        filteredParams as Record<string, string>
-    ).toString();
-
-    const fullEndpoint = `${endpoint}${queryString ? `?${queryString}` : ''}`;
-    return this.get<T>(fullEndpoint);
+    const queryString = new URLSearchParams(filteredParams as Record<string, string>).toString();
+    return this.get<T>(`${endpoint}${queryString ? `?${queryString}` : ''}`);
   }
 }
 
 const apiClient = new ApiClient();
-
-// ==========================================
-// DataService Class
-// ==========================================
 
 class DataService {
   // ==========================================
@@ -104,29 +55,15 @@ class DataService {
   // ==========================================
 
   async getHadiths(params?: PaginationParams): Promise<PaginatedResponse<Hadith>> {
-    const queryParams: Record<string, any> = {};
-    if (params) {
-      queryParams.page = params.page;
-      queryParams.pageSize = params.pageSize;
-    }
+    const queryParams: Record<string, unknown> = {};
+    if (params) { queryParams.page = params.page; queryParams.pageSize = params.pageSize; }
     return apiClient.getWithParams<PaginatedResponse<Hadith>>('/hadiths', queryParams);
   }
 
-  async searchHadiths(
-      searchTerm: string,
-      tag?: string | null,
-      params?: PaginationParams
-  ): Promise<PaginatedResponse<Hadith>> {
-    const queryParams: Record<string, any> = {
-      q: searchTerm || ''
-    };
-    if (tag) {
-      queryParams.tag = tag;
-    }
-    if (params) {
-      queryParams.page = params.page;
-      queryParams.pageSize = params.pageSize;
-    }
+  async searchHadiths(searchTerm: string, tag?: string | null, params?: PaginationParams): Promise<PaginatedResponse<Hadith>> {
+    const queryParams: Record<string, unknown> = { q: sanitizeInput(searchTerm) };
+    if (tag) queryParams.tag = sanitizeInput(tag);
+    if (params) { queryParams.page = params.page; queryParams.pageSize = params.pageSize; }
     return apiClient.getWithParams<PaginatedResponse<Hadith>>('/hadiths/search', queryParams);
   }
 
@@ -139,29 +76,15 @@ class DataService {
   // ==========================================
 
   async getCoran(params?: PaginationParams): Promise<PaginatedResponse<Coran>> {
-    const queryParams: Record<string, any> = {};
-    if (params) {
-      queryParams.page = params.page;
-      queryParams.pageSize = params.pageSize;
-    }
+    const queryParams: Record<string, unknown> = {};
+    if (params) { queryParams.page = params.page; queryParams.pageSize = params.pageSize; }
     return apiClient.getWithParams<PaginatedResponse<Coran>>('/coran', queryParams);
   }
 
-  async searchCoran(
-      searchTerm: string,
-      tag?: string | null,
-      params?: PaginationParams
-  ): Promise<PaginatedResponse<Coran>> {
-    const queryParams: Record<string, any> = {
-      q: searchTerm || ''
-    };
-    if (tag) {
-      queryParams.tag = tag;
-    }
-    if (params) {
-      queryParams.page = params.page;
-      queryParams.pageSize = params.pageSize;
-    }
+  async searchCoran(searchTerm: string, tag?: string | null, params?: PaginationParams): Promise<PaginatedResponse<Coran>> {
+    const queryParams: Record<string, unknown> = { q: sanitizeInput(searchTerm) };
+    if (tag) queryParams.tag = sanitizeInput(tag);
+    if (params) { queryParams.page = params.page; queryParams.pageSize = params.pageSize; }
     return apiClient.getWithParams<PaginatedResponse<Coran>>('/coran/search', queryParams);
   }
 
@@ -174,29 +97,15 @@ class DataService {
   // ==========================================
 
   async getDhikrs(params?: PaginationParams): Promise<PaginatedResponse<Dhikr>> {
-    const queryParams: Record<string, any> = {};
-    if (params) {
-      queryParams.page = params.page;
-      queryParams.pageSize = params.pageSize;
-    }
+    const queryParams: Record<string, unknown> = {};
+    if (params) { queryParams.page = params.page; queryParams.pageSize = params.pageSize; }
     return apiClient.getWithParams<PaginatedResponse<Dhikr>>('/dhikrs', queryParams);
   }
 
-  async searchDhikrs(
-      searchTerm: string,
-      tag?: string | null,
-      params?: PaginationParams
-  ): Promise<PaginatedResponse<Dhikr>> {
-    const queryParams: Record<string, any> = {
-      q: searchTerm || ''
-    };
-    if (tag) {
-      queryParams.tag = tag;
-    }
-    if (params) {
-      queryParams.page = params.page;
-      queryParams.pageSize = params.pageSize;
-    }
+  async searchDhikrs(searchTerm: string, tag?: string | null, params?: PaginationParams): Promise<PaginatedResponse<Dhikr>> {
+    const queryParams: Record<string, unknown> = { q: sanitizeInput(searchTerm) };
+    if (tag) queryParams.tag = sanitizeInput(tag);
+    if (params) { queryParams.page = params.page; queryParams.pageSize = params.pageSize; }
     return apiClient.getWithParams<PaginatedResponse<Dhikr>>('/dhikrs/search', queryParams);
   }
 
@@ -209,29 +118,15 @@ class DataService {
   // ==========================================
 
   async getDouaas(params?: PaginationParams): Promise<PaginatedResponse<Douaa>> {
-    const queryParams: Record<string, any> = {};
-    if (params) {
-      queryParams.page = params.page;
-      queryParams.pageSize = params.pageSize;
-    }
+    const queryParams: Record<string, unknown> = {};
+    if (params) { queryParams.page = params.page; queryParams.pageSize = params.pageSize; }
     return apiClient.getWithParams<PaginatedResponse<Douaa>>('/douaas', queryParams);
   }
 
-  async searchDouaas(
-      searchTerm: string,
-      tag?: string | null,
-      params?: PaginationParams
-  ): Promise<PaginatedResponse<Douaa>> {
-    const queryParams: Record<string, any> = {
-      q: searchTerm || ''
-    };
-    if (tag) {
-      queryParams.tag = tag;
-    }
-    if (params) {
-      queryParams.page = params.page;
-      queryParams.pageSize = params.pageSize;
-    }
+  async searchDouaas(searchTerm: string, tag?: string | null, params?: PaginationParams): Promise<PaginatedResponse<Douaa>> {
+    const queryParams: Record<string, unknown> = { q: sanitizeInput(searchTerm) };
+    if (tag) queryParams.tag = sanitizeInput(tag);
+    if (params) { queryParams.page = params.page; queryParams.pageSize = params.pageSize; }
     return apiClient.getWithParams<PaginatedResponse<Douaa>>('/douaas/search', queryParams);
   }
 
@@ -244,29 +139,15 @@ class DataService {
   // ==========================================
 
   async getSavants(params?: PaginationParams): Promise<PaginatedResponse<Savant>> {
-    const queryParams: Record<string, any> = {};
-    if (params) {
-      queryParams.page = params.page;
-      queryParams.pageSize = params.pageSize;
-    }
+    const queryParams: Record<string, unknown> = {};
+    if (params) { queryParams.page = params.page; queryParams.pageSize = params.pageSize; }
     return apiClient.getWithParams<PaginatedResponse<Savant>>('/savants', queryParams);
   }
 
-  async searchSavants(
-      searchTerm: string,
-      tag?: string | null,
-      params?: PaginationParams
-  ): Promise<PaginatedResponse<Savant>> {
-    const queryParams: Record<string, any> = {
-      q: searchTerm || ''
-    };
-    if (tag) {
-      queryParams.tag = tag;
-    }
-    if (params) {
-      queryParams.page = params.page;
-      queryParams.pageSize = params.pageSize;
-    }
+  async searchSavants(searchTerm: string, tag?: string | null, params?: PaginationParams): Promise<PaginatedResponse<Savant>> {
+    const queryParams: Record<string, unknown> = { q: sanitizeInput(searchTerm) };
+    if (tag) queryParams.tag = sanitizeInput(tag);
+    if (params) { queryParams.page = params.page; queryParams.pageSize = params.pageSize; }
     return apiClient.getWithParams<PaginatedResponse<Savant>>('/savants/search', queryParams);
   }
 
@@ -285,15 +166,12 @@ class DataService {
   async testApiConnection(): Promise<boolean> {
     try {
       await apiClient.get('/health');
-      console.log('✅ API connection successful');
       return true;
-    } catch (error) {
-      console.error('❌ API connection test failed:', error);
+    } catch {
       return false;
     }
   }
 }
 
-// Export singleton instance
 export const dataService = new DataService();
 export default dataService;
