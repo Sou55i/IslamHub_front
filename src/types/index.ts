@@ -8,9 +8,8 @@ export interface BaseText {
   sujet: string;
   texte_arabe: string;
   texte_francais: string | null;
-  phonetique: string | null;
+  phonétique: string | null;
   explication: string | null;
-  type_id: number;
   tag: string;
 }
 
