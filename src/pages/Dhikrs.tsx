@@ -1,52 +1,129 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Heart, BookOpen, Loader } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Heart, BookOpen, Loader, Search, Filter, X, Sparkles, Tags, Hash, Star } from 'lucide-react';
 import { useDhikrs } from '../context/DhikrProvider';
 import { dataService } from '../services/DataService';
-import SearchBar from '../components/SearchBar';
 import type { Dhikr } from '../types';
+
+// Fonction utilitaire pour extraire les tags
+const getTagsArray = (tags: string | null | undefined): string[] => {
+    if (!tags) return [];
+    return tags.split(',').map(t => t.trim()).filter(t => t.length > 0);
+};
 
 export const Dhikrs: React.FC = () => {
     const { dhikrs: initialDhikrs, isLoading, error } = useDhikrs();
     const [searchQuery, setSearchQuery] = useState('');
     const [filteredDhikrs, setFilteredDhikrs] = useState<Dhikr[]>([]);
     const [isSearching, setIsSearching] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+    const [selectedTag, setSelectedTag] = useState<string | null>(null);
+    const [categories, setCategories] = useState<string[]>([]);
+    const [allTags, setAllTags] = useState<string[]>([]);
+    const [tagCounts, setTagCounts] = useState<Map<string, number>>(new Map());
 
+    // Extraire les catégories et tags des données
     useEffect(() => {
         setFilteredDhikrs(initialDhikrs);
+
+        // Extraire les catégories uniques
+        const uniqueCategories = new Set<string>();
+        const tagsSet = new Set<string>();
+        const counts = new Map<string, number>();
+
+        initialDhikrs.forEach(dhikr => {
+            // Catégories
+            if (dhikr.categorie) {
+                uniqueCategories.add(dhikr.categorie);
+            }
+
+            // Tags
+            const tags = getTagsArray(dhikr.tags);
+            tags.forEach(tag => {
+                tagsSet.add(tag);
+                counts.set(tag, (counts.get(tag) || 0) + 1);
+            });
+        });
+
+        setCategories(Array.from(uniqueCategories).sort());
+        setAllTags(Array.from(tagsSet).sort((a, b) => a.localeCompare(b)));
+        setTagCounts(counts);
     }, [initialDhikrs]);
+
+    // Fonction pour filtrer les dhikrs
+    const filterDhikrs = (results: Dhikr[]) => {
+        let filtered = [...results];
+
+        // Filtre par catégorie
+        if (selectedCategory) {
+            filtered = filtered.filter(dhikr => dhikr.categorie === selectedCategory);
+        }
+
+        // Filtre par tag
+        if (selectedTag) {
+            const tagToFind = selectedTag.toLowerCase();
+            filtered = filtered.filter(dhikr => {
+                const tags = getTagsArray(dhikr.tags).map(t => t.toLowerCase());
+                return tags.includes(tagToFind);
+            });
+        }
+
+        return filtered;
+    };
+
+    const handleTagClick = (tag: string) => {
+        setSelectedTag(tag);
+        setSelectedCategory(null); // Reset category filter when tag is selected
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleCategoryClick = (category: string | null) => {
+        setSelectedCategory(category);
+        setSelectedTag(null); // Reset tag filter when category is selected
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
     useEffect(() => {
         const handler = setTimeout(async () => {
-            if (searchQuery.trim() === '') {
-                setFilteredDhikrs(initialDhikrs);
-                return;
-            }
-            setIsSearching(true);
-            try {
-                const response = await dataService.searchDhikrs(searchQuery);
-                setFilteredDhikrs(response.data);
-            } catch {
-                const q = searchQuery.toLowerCase();
-                setFilteredDhikrs(
-                    initialDhikrs.filter(dhikr =>
+            let results = [...initialDhikrs];
+
+            // Filtre par recherche
+            if (searchQuery.trim() !== '') {
+                setIsSearching(true);
+                try {
+                    const response = await dataService.searchDhikrs(searchQuery);
+                    results = response.data;
+                } catch {
+                    const q = searchQuery.toLowerCase();
+                    results = results.filter(dhikr =>
                         dhikr.sujet.toLowerCase().includes(q) ||
                         dhikr.texte_francais?.toLowerCase().includes(q) ||
                         dhikr.phonétique?.toLowerCase().includes(q) ||
-                        dhikr.commentaire?.toLowerCase().includes(q)
-                    )
-                );
-            } finally {
-                setIsSearching(false);
+                        dhikr.commentaire?.toLowerCase().includes(q) ||
+                        getTagsArray(dhikr.tags).some(tag => tag.toLowerCase().includes(q))
+                    );
+                } finally {
+                    setIsSearching(false);
+                }
             }
+
+            // Appliquer les filtres de catégorie et tags
+            const filtered = filterDhikrs(results);
+            setFilteredDhikrs(filtered);
         }, 300);
 
         return () => clearTimeout(handler);
-    }, [searchQuery, initialDhikrs]);
+    }, [searchQuery, selectedCategory, selectedTag, initialDhikrs]);
+
+    const handleResetFilters = () => {
+        setSearchQuery('');
+        setSelectedCategory(null);
+        setSelectedTag(null);
+    };
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-teal-50 dark:from-gray-900 dark:to-emerald-950 flex items-center justify-center">
+            <div className="min-h-screen bg-gradient-to-b from-amber-50 to-emerald-50 dark:from-gray-900 dark:to-emerald-950 flex items-center justify-center">
                 <div className="text-center">
                     <Loader className="h-12 w-12 text-emerald-600 dark:text-emerald-400 animate-spin mx-auto mb-4" />
                     <p className="text-xl text-emerald-800 dark:text-emerald-200 font-amiri">
@@ -59,7 +136,7 @@ export const Dhikrs: React.FC = () => {
 
     if (error) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
+            <div className="min-h-screen bg-gradient-to-b from-amber-50 to-emerald-50 dark:from-gray-900 dark:to-emerald-950 flex items-center justify-center">
                 <div className="text-center max-w-md mx-auto p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-xl">
                     <div className="text-6xl mb-4">😔</div>
                     <h3 className="text-xl font-bold text-red-600 dark:text-red-400 mb-2">
@@ -72,84 +149,369 @@ export const Dhikrs: React.FC = () => {
     }
 
     return (
-        <div className="space-y-8">
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
+        <div className="min-h-screen bg-gradient-to-b from-amber-50 to-emerald-50 dark:from-gray-900 dark:to-emerald-950">
+            <motion.header
+                initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="relative py-16 bg-arabesque bg-cover bg-center"
+                className="relative py-20 bg-emerald-800 dark:bg-emerald-950 overflow-hidden"
             >
-                <div className="absolute inset-0 bg-emerald-900/80 dark:bg-emerald-950/90 backdrop-blur-sm"></div>
-                <div className="relative text-center px-4">
-                    <h1 className="text-4xl font-bold text-white mb-4 font-amiri">Dhikrs</h1>
-                    <p className="text-lg text-emerald-50 max-w-2xl mx-auto">
-                        Multiplier les évocations
+                <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]" />
+                <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-amber-50 dark:from-gray-900" />
+
+                <div className="relative container mx-auto px-4 text-center">
+                    <motion.div
+                        initial={{ scale: 0.9 }}
+                        animate={{ scale: 1 }}
+                        className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/10 backdrop-blur-sm mb-6"
+                    >
+                        <Heart className="h-10 w-10 text-white" />
+                    </motion.div>
+                    <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 font-amiri">
+                        Évocations et Dhikrs
+                    </h1>
+                    <p className="text-xl text-emerald-200 max-w-3xl mx-auto">
+                        "N'est-ce pas par l'évocation d'Allah que les cœurs se tranquillisent?"
+                    </p>
+                    <p className="text-emerald-300 mt-4 font-amiri">
+                        Sourate Ar-Ra'd, verset 28
                     </p>
                 </div>
-            </motion.div>
+            </motion.header>
 
-            <div className="max-w-7xl mx-auto px-4">
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-4">
-                    <SearchBar
-                        value={searchQuery}
-                        onChange={setSearchQuery}
-                        placeholder="Rechercher une évocation..."
-                        isSearching={isSearching}
-                        onClear={() => setSearchQuery('')}
-                    />
-                </div>
-
-                {searchQuery.trim() !== '' && (
-                    <p className="text-sm text-emerald-700 dark:text-emerald-400 mb-4 px-1">
-                        {filteredDhikrs.length} évocation{filteredDhikrs.length !== 1 ? 's' : ''} trouvée{filteredDhikrs.length !== 1 ? 's' : ''}
-                    </p>
+            <main className="container mx-auto px-4 py-12 -mt-12 relative z-10">
+                {/* Section des catégories */}
+                {categories.length > 0 && (
+                    <motion.section
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className="mb-8"
+                    >
+                        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-amber-200 dark:border-emerald-800">
+                            <div className="flex items-center gap-2 mb-4">
+                                <Star className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                                <h3 className="text-lg font-semibold text-emerald-900 dark:text-emerald-300">
+                                    Catégories
+                                </h3>
+                            </div>
+                            <div className="flex flex-wrap gap-3">
+                                <button
+                                    onClick={() => handleCategoryClick(null)}
+                                    className={`px-4 py-2 rounded-full transition-all duration-300 ${
+                                        !selectedCategory && !selectedTag
+                                            ? 'bg-emerald-600 text-white shadow-lg'
+                                            : 'bg-white dark:bg-gray-800 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/50'
+                                    }`}
+                                >
+                                    Tous
+                                </button>
+                                {categories.map(cat => (
+                                    <button
+                                        key={cat}
+                                        onClick={() => handleCategoryClick(cat)}
+                                        className={`px-4 py-2 rounded-full transition-all duration-300 ${
+                                            selectedCategory === cat
+                                                ? 'bg-emerald-600 text-white shadow-lg'
+                                                : 'bg-white dark:bg-gray-800 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/50'
+                                        }`}
+                                    >
+                                        {cat}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </motion.section>
                 )}
 
-                {filteredDhikrs.length === 0 ? (
-                    <div className="text-center py-12">
-                        <p className="text-gray-500 dark:text-gray-400 font-amiri">
-                            {searchQuery ? `Aucun dhikr trouvé pour "${searchQuery}"` : 'Aucun dhikr disponible'}
-                        </p>
-                    </div>
-                ) : (
-                    <div className="grid md:grid-cols-2 gap-6">
-                        {filteredDhikrs.map((dhikr, index) => (
-                            <motion.div
-                                key={dhikr.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: Math.min(index, 10) * 0.05 }}
-                                className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-emerald-100 dark:border-emerald-800 hover:border-emerald-300 dark:hover:border-emerald-700 transition-colors"
+                {/* Section des tags populaires */}
+                {allTags.length > 0 && (
+                    <motion.section
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.15 }}
+                        className="mb-8"
+                    >
+                        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-amber-200 dark:border-emerald-800">
+                            <div className="flex items-center gap-2 mb-4">
+                                <Tags className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                                <h3 className="text-lg font-semibold text-emerald-900 dark:text-emerald-300">
+                                    Tags populaires
+                                </h3>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                                {allTags.slice(0, 15).map(tag => {
+                                    const count = tagCounts.get(tag) || 0;
+                                    return (
+                                        <motion.button
+                                            key={tag}
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => handleTagClick(tag)}
+                                            className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300 ${
+                                                selectedTag === tag
+                                                    ? 'bg-emerald-600 text-white shadow-md'
+                                                    : 'bg-amber-100 dark:bg-emerald-800 text-amber-800 dark:text-emerald-200 hover:bg-amber-200 dark:hover:bg-emerald-700'
+                                            }`}
+                                        >
+                                            <Hash className="h-3 w-3" />
+                                            {tag}
+                                            <span className="text-xs opacity-75">({count})</span>
+                                        </motion.button>
+                                    );
+                                })}
+                                {allTags.length > 15 && (
+                                    <span className="text-sm text-gray-500 dark:text-gray-400 self-center">
+                                        +{allTags.length - 15} autres tags
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    </motion.section>
+                )}
+
+                {/* Barre de recherche et filtres */}
+                <motion.section
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2 }}
+                    className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 mb-8 sticky top-20 z-20 border border-emerald-100 dark:border-emerald-900"
+                >
+                    <div className="flex flex-col md:flex-row gap-6">
+                        <div className="flex-1 relative">
+                            <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                                <Search className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                            </div>
+                            <input
+                                type="text"
+                                aria-label="Rechercher une évocation"
+                                placeholder="Rechercher une évocation..."
+                                className="w-full pl-12 pr-6 py-3 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-lg font-amiri"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                            {isSearching && (
+                                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                    <Loader className="h-5 w-5 text-emerald-600 dark:text-emerald-400 animate-spin" />
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Sélecteur de tags */}
+                        <div className="relative md:w-80">
+                            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                                <Filter className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                            </div>
+                            <select
+                                aria-label="Filtrer par tag"
+                                className="w-full pl-4 pr-10 py-3 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white appearance-none font-medium cursor-pointer"
+                                value={selectedTag || ''}
+                                onChange={(e) => {
+                                    setSelectedTag(e.target.value || null);
+                                    setSelectedCategory(null);
+                                }}
                             >
-                                <div className="flex items-start gap-4">
-                                    <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center flex-shrink-0">
-                                        <Heart className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-                                    </div>
-                                    <div className="flex-1">
-                                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                                            {dhikr.sujet}
-                                        </h3>
-                                        <p className="text-2xl mb-4 font-arabic text-right leading-loose text-gray-800 dark:text-gray-200 font-amiri">
-                                            {dhikr.texte_arabe}
-                                        </p>
-                                        <p className="text-gray-600 dark:text-gray-300 mb-4 font-amiri">
-                                            {dhikr.texte_francais}
-                                        </p>
-                                        <p className="text-gray-600 dark:text-gray-300 mb-4 font-amiri">
-                                            {dhikr.phonétique}
-                                        </p>
-                                        {dhikr.commentaire && (
-                                            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                                                <BookOpen className="w-4 h-4" />
-                                                <span>{dhikr.commentaire}</span>
-                                            </div>
-                                        )}
-                                    </div>
+                                <option value="">🏷️ Tous les tags</option>
+                                {allTags.map(tag => {
+                                    const count = tagCounts.get(tag) || 0;
+                                    return (
+                                        <option key={tag} value={tag}>
+                                            {tag} ({count})
+                                        </option>
+                                    );
+                                })}
+                            </select>
+                        </div>
+                    </div>
+
+                    {(selectedCategory || selectedTag || searchQuery) && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="mt-4 flex items-center justify-between bg-gradient-to-r from-emerald-50 to-amber-50 dark:from-emerald-900/30 dark:to-amber-900/30 rounded-lg px-4 py-2"
+                        >
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-medium text-emerald-800 dark:text-emerald-200">
+                                    Filtre actif :
+                                </span>
+                                {selectedCategory && (
+                                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-600 text-white rounded-full text-sm">
+                                        <Star className="h-3 w-3" />
+                                        {selectedCategory}
+                                    </span>
+                                )}
+                                {selectedTag && (
+                                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-600 text-white rounded-full text-sm">
+                                        <Hash className="h-3 w-3" />
+                                        {selectedTag}
+                                    </span>
+                                )}
+                                {searchQuery && (
+                                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-600 text-white rounded-full text-sm">
+                                        <Search className="h-3 w-3" />
+                                        "{searchQuery}"
+                                    </span>
+                                )}
+                            </div>
+                            <button
+                                onClick={handleResetFilters}
+                                aria-label="Retirer les filtres"
+                                className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-200 p-1 transition-colors"
+                            >
+                                <X className="h-5 w-5" />
+                            </button>
+                        </motion.div>
+                    )}
+                </motion.section>
+
+                {/* Résultats */}
+                <section className="pb-16">
+                    <AnimatePresence mode="wait">
+                        {filteredDhikrs.length === 0 ? (
+                            <motion.div
+                                key="no-results"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="text-center py-16 bg-white dark:bg-gray-800 rounded-2xl shadow-xl"
+                            >
+                                <div className="max-w-md mx-auto">
+                                    <div className="text-6xl mb-4">💫</div>
+                                    <h3 className="text-xl font-bold text-gray-700 dark:text-gray-300 mb-2">
+                                        Aucun dhikr trouvé
+                                    </h3>
+                                    <p className="text-gray-500 dark:text-gray-400 mb-6">
+                                        {searchQuery || selectedCategory || selectedTag
+                                            ? "Essayez de modifier vos critères de recherche"
+                                            : "Aucun dhikr n'est disponible pour le moment"}
+                                    </p>
+                                    {(searchQuery || selectedCategory || selectedTag) && (
+                                        <button
+                                            onClick={handleResetFilters}
+                                            className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors"
+                                        >
+                                            Réinitialiser les filtres
+                                        </button>
+                                    )}
                                 </div>
                             </motion.div>
-                        ))}
-                    </div>
-                )}
-            </div>
+                        ) : (
+                            <>
+                                <motion.p
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    className="text-sm font-medium text-emerald-700 dark:text-emerald-400 mb-6"
+                                >
+                                    {filteredDhikrs.length} évocation{filteredDhikrs.length > 1 ? 's' : ''} trouvée{filteredDhikrs.length > 1 ? 's' : ''}
+                                </motion.p>
+
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                    {filteredDhikrs.map((dhikr, index) => {
+                                        const tags = getTagsArray(dhikr.tags);
+                                        return (
+                                            <motion.div
+                                                key={dhikr.id}
+                                                initial={{ opacity: 0, y: 20 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: Math.min(index, 10) * 0.05 }}
+                                                layout
+                                                whileHover={{ scale: 1.01 }}
+                                                className="bg-gradient-to-br from-amber-50 to-emerald-50 dark:from-emerald-900 dark:to-amber-900 rounded-2xl p-6 shadow-xl border border-amber-200 dark:border-emerald-800 hover:shadow-2xl transition-all duration-300"
+                                            >
+                                                <div className="relative">
+                                                    <div className="absolute top-0 right-0 w-24 h-24 opacity-20">
+                                                        <svg viewBox="0 0 100 100" className="text-amber-500 dark:text-emerald-400">
+                                                            <path fill="currentColor" d="M20,20 Q30,10 40,20 T60,20 T80,20 T100,20" className="transform rotate-45" />
+                                                        </svg>
+                                                    </div>
+
+                                                    <div className="flex items-start gap-4 relative z-10">
+                                                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-400 to-emerald-500 dark:from-amber-600 dark:to-emerald-600 flex items-center justify-center flex-shrink-0 shadow-lg">
+                                                            <Heart className="w-7 h-7 text-white" />
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <h3 className="text-2xl font-bold text-amber-800 dark:text-amber-200 mb-3 font-amiri">
+                                                                {dhikr.sujet}
+                                                            </h3>
+
+                                                            <div className="bg-white/50 dark:bg-gray-800/50 p-5 rounded-lg mb-4 border border-amber-100 dark:border-emerald-800">
+                                                                <p className="text-3xl font-arabic text-right leading-loose text-gray-900 dark:text-white font-amiri">
+                                                                    {dhikr.texte_arabe}
+                                                                </p>
+                                                            </div>
+
+                                                            {dhikr.phonétique && (
+                                                                <div className="mb-3 p-3 bg-amber-100/50 dark:bg-emerald-900/30 rounded-lg">
+                                                                    <p className="text-sm text-amber-700 dark:text-amber-300 mb-1 font-medium">Phonétique :</p>
+                                                                    <p className="text-gray-700 dark:text-gray-300 italic">
+                                                                        {dhikr.phonétique}
+                                                                    </p>
+                                                                </div>
+                                                            )}
+
+                                                            {dhikr.texte_francais && (
+                                                                <div className="mb-4 pl-4 border-l-4 border-emerald-500">
+                                                                    <p className="text-sm text-emerald-700 dark:text-emerald-400 mb-1 font-medium">Traduction :</p>
+                                                                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                                                                        {dhikr.texte_francais}
+                                                                    </p>
+                                                                </div>
+                                                            )}
+
+                                                            {dhikr.commentaire && (
+                                                                <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-emerald-900/20 rounded-lg mt-3">
+                                                                    <BookOpen className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
+                                                                    <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                                                                        {dhikr.commentaire}
+                                                                    </p>
+                                                                </div>
+                                                            )}
+
+                                                            {/* Affichage des tags */}
+                                                            {tags.length > 0 && (
+                                                                <div className="mt-4 flex flex-wrap gap-2">
+                                                                    {tags.map(tag => (
+                                                                        <motion.button
+                                                                            key={tag}
+                                                                            whileHover={{ scale: 1.05 }}
+                                                                            onClick={() => handleTagClick(tag)}
+                                                                            className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-amber-100 dark:bg-emerald-800 text-amber-800 dark:text-emerald-200 hover:bg-amber-200 dark:hover:bg-emerald-700 transition-colors cursor-pointer"
+                                                                        >
+                                                                            <Hash className="h-3 w-3" />
+                                                                            {tag}
+                                                                        </motion.button>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+
+                                                            {dhikr.categorie && (
+                                                                <div className="mt-3">
+                                                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 dark:bg-emerald-800 text-emerald-700 dark:text-emerald-200">
+                                                                        <Sparkles className="h-3 w-3 mr-1" />
+                                                                        {dhikr.categorie}
+                                                                    </span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        );
+                                    })}
+                                </div>
+                            </>
+                        )}
+                    </AnimatePresence>
+                </section>
+            </main>
+
+            <footer className="bg-emerald-900 dark:bg-emerald-950 text-white py-12 mt-16">
+                <div className="container mx-auto px-4 text-center">
+                    <p className="text-emerald-300 mb-4 font-amiri text-xl">
+                        "Et glorifiez-Le matin et soir"
+                    </p>
+                    <p className="text-emerald-200">Sourate Al-Ahzab, verset 42</p>
+                </div>
+            </footer>
         </div>
     );
 };

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BookOpen, Search, Filter, X, Star, ChevronRight, Loader } from 'lucide-react';
+import { BookOpen, Search, Filter, X, Star, ChevronRight, Loader, Tags, Hash } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useHadiths} from "../context/HadithProvider.tsx";
 import { dataService } from '../services/DataService';
 import type { Hadith as HadithType } from '../types';
 
@@ -15,7 +16,7 @@ interface Hadith extends HadithType {
   texte_francais: string | null;
   phonétique: string | null;
   explication: string | null;
-  tag: string;
+  tag: string | null;
 }
 
 const TOPIC_ROUTES: Record<string, string> = {
@@ -34,158 +35,201 @@ const TOPIC_ROUTES: Record<string, string> = {
   'Famille': '/hadith/famille',
 };
 
-const HadithCard: React.FC<{ hadith: Hadith; onClick: () => void }> = ({ hadith, onClick }) => (
-    <motion.div
-        whileHover={{ scale: 1.01 }}
-        onClick={onClick}
-        className="relative bg-gradient-to-br from-amber-50 to-emerald-50 dark:from-emerald-900 dark:to-amber-900 rounded-2xl p-6 shadow-xl border border-amber-200 dark:border-emerald-800 space-y-4 overflow-hidden cursor-pointer h-full flex flex-col"
-    >
-      <div className="absolute top-0 right-0 w-24 h-24 opacity-20">
-        <svg viewBox="0 0 100 100" className="text-amber-500 dark:text-emerald-400">
-          <path fill="currentColor" d="M20,20 Q30,10 40,20 T60,20 T80,20 T100,20" className="transform rotate-45" />
-        </svg>
-      </div>
+// Fonction utilitaire pour extraire les tags
+const getTagsArray = (tag: string | null): string[] => {
+  if (!tag) return [];
+  return tag.split(',').map(t => t.trim()).filter(t => t.length > 0);
+};
 
-      {hadith.sujet && (
-          <div className="flex items-center">
-            <Star className="h-5 w-5 text-amber-500 dark:text-amber-300 mr-2" />
-            <h3 className="text-xl font-bold text-amber-800 dark:text-amber-200 font-amiri">
-              {hadith.sujet}
-            </h3>
-          </div>
-      )}
+const HadithCard: React.FC<{ hadith: Hadith; onClick: () => void; onTagClick?: (tag: string) => void }> = ({ hadith, onClick, onTagClick }) => {
+  const tags = getTagsArray(hadith.tag);
 
-      {hadith.rapporteur && (
-          <div className="text-sm text-emerald-700 dark:text-emerald-300 italic">
-            Rapporteur: {hadith.rapporteur}
-          </div>
-      )}
+  const handleTagClick = (e: React.MouseEvent, tag: string) => {
+    e.stopPropagation(); // Empêche d'ouvrir le modal
+    if (onTagClick) {
+      onTagClick(tag);
+    }
+  };
 
-      <div className="bg-white dark:bg-gray-800/80 p-4 rounded-lg border border-amber-100 dark:border-emerald-800 flex-grow">
-        <p className="text-2xl text-gray-900 dark:text-white font-arabic leading-loose text-right line-clamp-3">
-          {hadith.texte_arabe}
-        </p>
+  return (
+      <motion.div
+          whileHover={{ scale: 1.01 }}
+          onClick={onClick}
+          className="relative bg-gradient-to-br from-amber-50 to-emerald-50 dark:from-emerald-900 dark:to-amber-900 rounded-2xl p-6 shadow-xl border border-amber-200 dark:border-emerald-800 space-y-4 overflow-hidden cursor-pointer h-full flex flex-col transition-all duration-300 hover:shadow-2xl"
+      >
+        <div className="absolute top-0 right-0 w-24 h-24 opacity-20">
+          <svg viewBox="0 0 100 100" className="text-amber-500 dark:text-emerald-400">
+            <path fill="currentColor" d="M20,20 Q30,10 40,20 T60,20 T80,20 T100,20" className="transform rotate-45" />
+          </svg>
+        </div>
 
-        {hadith.texte_francais && (
-            <div className="mt-4 pl-4 border-l-4 border-amber-300 dark:border-emerald-600 line-clamp-2">
-              <p className="text-sm text-amber-700 dark:text-amber-200 mb-1">Signification :</p>
-              <p className="text-gray-700 dark:text-gray-300">{hadith.texte_francais}</p>
+        {hadith.sujet && (
+            <div className="flex items-center">
+              <Star className="h-5 w-5 text-amber-500 dark:text-amber-300 mr-2" />
+              <h3 className="text-xl font-bold text-amber-800 dark:text-amber-200 font-amiri">
+                {hadith.sujet}
+              </h3>
             </div>
         )}
-      </div>
 
-      <div className="flex flex-wrap gap-2">
-        {hadith.tag.split(',').map(tag => (
-            <motion.span
-                key={tag.trim()}
-                whileHover={{ scale: 1.05 }}
-                className="text-xs bg-amber-100 dark:bg-emerald-800 text-amber-800 dark:text-emerald-200 px-3 py-1 rounded-full flex items-center"
-            >
-              <ChevronRight className="h-3 w-3 mr-1" />
-              {tag.trim()}
-            </motion.span>
-        ))}
-      </div>
+        {hadith.rapporteur && (
+            <div className="text-sm text-emerald-700 dark:text-emerald-300 italic">
+              Rapporteur: {hadith.rapporteur}
+            </div>
+        )}
 
-      <div className="mt-auto pt-4 text-center">
-        <button className="text-emerald-600 dark:text-emerald-400 text-sm font-medium hover:underline">
-          Lire la suite...
-        </button>
-      </div>
-    </motion.div>
-);
+        <div className="bg-white dark:bg-gray-800/80 p-4 rounded-lg border border-amber-100 dark:border-emerald-800 flex-grow">
+          <p className="text-2xl text-gray-900 dark:text-white font-arabic leading-loose text-right line-clamp-3">
+            {hadith.texte_arabe}
+          </p>
 
-const HadithModal: React.FC<{ hadith: Hadith; onClose: () => void }> = ({ hadith, onClose }) => (
-    <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
-        onClick={onClose}
-    >
+          {hadith.texte_francais && (
+              <div className="mt-4 pl-4 border-l-4 border-amber-300 dark:border-emerald-600 line-clamp-2">
+                <p className="text-sm text-amber-700 dark:text-amber-200 mb-1">Signification :</p>
+                <p className="text-gray-700 dark:text-gray-300">{hadith.texte_francais}</p>
+              </div>
+          )}
+        </div>
+
+        {tags.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {tags.map(tag => (
+                  <motion.span
+                      key={tag}
+                      whileHover={{ scale: 1.05 }}
+                      onClick={(e) => handleTagClick(e, tag)}
+                      className="text-xs bg-amber-100 dark:bg-emerald-800 text-amber-800 dark:text-emerald-200 px-3 py-1 rounded-full flex items-center cursor-pointer hover:bg-amber-200 dark:hover:bg-emerald-700 transition-colors"
+                  >
+                    <Hash className="h-3 w-3 mr-1" />
+                    {tag}
+                  </motion.span>
+              ))}
+            </div>
+        )}
+
+        <div className="mt-auto pt-4 text-center">
+          <button className="text-emerald-600 dark:text-emerald-400 text-sm font-medium hover:underline">
+            Lire la suite...
+          </button>
+        </div>
+      </motion.div>
+  );
+};
+
+const HadithModal: React.FC<{ hadith: Hadith; onClose: () => void; onTagClick?: (tag: string) => void }> = ({ hadith, onClose, onTagClick }) => {
+  const tags = getTagsArray(hadith.tag);
+
+  const handleTagClick = (tag: string) => {
+    if (onTagClick) {
+      onTagClick(tag);
+      onClose();
+    }
+  };
+
+  return (
       <motion.div
-          initial={{ scale: 0.9, y: 50 }}
-          animate={{ scale: 1, y: 0 }}
-          exit={{ scale: 0.9, y: 50 }}
-          onClick={(e) => e.stopPropagation()}
-          className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto relative"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+          onClick={onClose}
       >
-        <button
-            onClick={onClose}
-            aria-label="Fermer"
-            className="absolute top-4 right-4 p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+        <motion.div
+            initial={{ scale: 0.9, y: 50 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0.9, y: 50 }}
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto relative"
         >
-          <X className="h-6 w-6" />
-        </button>
+          <button
+              onClick={onClose}
+              aria-label="Fermer"
+              className="absolute top-4 right-4 p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+          >
+            <X className="h-6 w-6" />
+          </button>
 
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold text-amber-800 dark:text-amber-200 font-amiri">
-                {hadith.sujet}
-              </h2>
-              {hadith.rapporteur && (
-                  <p className="text-emerald-700 dark:text-emerald-400 mt-1">
-                    Rapporteur: {hadith.rapporteur}
-                  </p>
-              )}
-              {hadith.narrateur && (
-                  <p className="text-gray-600 dark:text-gray-400 mt-1">
-                    Narrateur: {hadith.narrateur}
-                  </p>
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-amber-800 dark:text-amber-200 font-amiri">
+                  {hadith.sujet}
+                </h2>
+                {hadith.rapporteur && (
+                    <p className="text-emerald-700 dark:text-emerald-400 mt-1">
+                      Rapporteur: {hadith.rapporteur}
+                    </p>
+                )}
+                {hadith.narrateur && (
+                    <p className="text-gray-600 dark:text-gray-400 mt-1">
+                      Narrateur: {hadith.narrateur}
+                    </p>
+                )}
+              </div>
+
+              {hadith.statut && (
+                  <span className="bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 px-3 py-1 rounded-full text-sm">
+                  {hadith.statut}
+                </span>
               )}
             </div>
 
-            {hadith.statut && (
-                <span className="bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 px-3 py-1 rounded-full text-sm">
-                  {hadith.statut}
-                </span>
-            )}
-          </div>
+            <div className="bg-amber-50 dark:bg-gray-700 p-6 rounded-lg">
+              <p className="text-3xl text-gray-900 dark:text-white font-arabic leading-loose text-right">
+                {hadith.texte_arabe}
+              </p>
 
-          <div className="bg-amber-50 dark:bg-gray-700 p-6 rounded-lg">
-            <p className="text-3xl text-gray-900 dark:text-white font-arabic leading-loose text-right">
-              {hadith.texte_arabe}
-            </p>
+              {hadith.phonétique && (
+                  <div className="mt-6 bg-white dark:bg-gray-600 p-4 rounded">
+                    <p className="text-sm text-amber-700 dark:text-amber-300 mb-2">Phonétique:</p>
+                    <p className="text-gray-700 dark:text-gray-200">{hadith.phonétique}</p>
+                  </div>
+              )}
 
-            {hadith.phonétique && (
-                <div className="mt-6 bg-white dark:bg-gray-600 p-4 rounded">
-                  <p className="text-sm text-amber-700 dark:text-amber-300 mb-2">Phonétique:</p>
-                  <p className="text-gray-700 dark:text-gray-200">{hadith.phonétique}</p>
+              {hadith.texte_francais && (
+                  <div className="mt-6 pl-4 border-l-4 border-emerald-500">
+                    <p className="text-sm text-emerald-700 dark:text-emerald-400 mb-2">Traduction:</p>
+                    <p className="text-gray-700 dark:text-gray-300">{hadith.texte_francais}</p>
+                  </div>
+              )}
+            </div>
+
+            {hadith.explication && (
+                <div className="mt-6 bg-emerald-50 dark:bg-emerald-900/30 p-6 rounded-lg">
+                  <p className="text-lg font-bold text-emerald-800 dark:text-emerald-300 mb-3">Explication:</p>
+                  <p className="text-gray-700 dark:text-gray-300">{hadith.explication}</p>
                 </div>
             )}
 
-            {hadith.texte_francais && (
-                <div className="mt-6 pl-4 border-l-4 border-emerald-500">
-                  <p className="text-sm text-emerald-700 dark:text-emerald-400 mb-2">Traduction:</p>
-                  <p className="text-gray-700 dark:text-gray-300">{hadith.texte_francais}</p>
+            {tags.length > 0 && (
+                <div>
+                  <p className="text-sm font-semibold text-amber-700 dark:text-amber-300 mb-2 flex items-center gap-2">
+                    <Tags className="h-4 w-4" />
+                    Tags associés :
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {tags.map(tag => (
+                        <motion.span
+                            key={tag}
+                            whileHover={{ scale: 1.05 }}
+                            onClick={() => handleTagClick(tag)}
+                            className="cursor-pointer text-xs bg-amber-100 dark:bg-emerald-800 text-amber-800 dark:text-emerald-200 px-3 py-1 rounded-full hover:bg-amber-200 dark:hover:bg-emerald-700 transition-colors"
+                        >
+                          <Hash className="h-3 w-3 inline mr-1" />
+                          {tag}
+                        </motion.span>
+                    ))}
+                  </div>
                 </div>
             )}
           </div>
-
-          {hadith.explication && (
-              <div className="mt-6 bg-emerald-50 dark:bg-emerald-900/30 p-6 rounded-lg">
-                <p className="text-lg font-bold text-emerald-800 dark:text-emerald-300 mb-3">Explication:</p>
-                <p className="text-gray-700 dark:text-gray-300">{hadith.explication}</p>
-              </div>
-          )}
-
-          <div className="flex flex-wrap gap-2">
-            {hadith.tag.split(',').map(tag => (
-                <span
-                    key={tag.trim()}
-                    className="text-xs bg-amber-100 dark:bg-emerald-800 text-amber-800 dark:text-emerald-200 px-3 py-1 rounded-full"
-                >
-                  {tag.trim()}
-                </span>
-            ))}
-          </div>
-        </div>
+        </motion.div>
       </motion.div>
-    </motion.div>
-);
+  );
+};
 
 export const Hadiths: React.FC = () => {
+
   const navigate = useNavigate();
   const [hadithsData, setHadithsData] = useState<Hadith[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -196,12 +240,12 @@ export const Hadiths: React.FC = () => {
   const [filteredHadiths, setFilteredHadiths] = useState<Hadith[]>([]);
   const [selectedHadith, setSelectedHadith] = useState<Hadith | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+  const [tagCounts, setTagCounts] = useState<Map<string, number>>(new Map());
 
   const topics = Object.keys(TOPIC_ROUTES);
 
   useEffect(() => {
     loadHadiths();
-    loadTags();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -212,6 +256,8 @@ export const Hadiths: React.FC = () => {
       const response = await dataService.getHadiths();
       setHadithsData(response.data);
       setFilteredHadiths(response.data);
+      // Charger les tags après avoir les hadiths
+      loadTagsFromData(response.data);
     } catch (err) {
       console.error('Error loading hadiths:', err);
       setError('Erreur lors du chargement des hadiths. Veuillez réessayer.');
@@ -220,23 +266,30 @@ export const Hadiths: React.FC = () => {
     }
   };
 
-  const loadTags = async () => {
+  const loadTagsFromData = (hadiths: Hadith[]) => {
     try {
-      const tags = await dataService.getHadithTags();
-      setAllTags(tags);
+      const tags = new Set<string>();
+      const counts = new Map<string, number>();
+
+      hadiths.forEach(hadith => {
+        const tagArray = getTagsArray(hadith.tag);
+        tagArray.forEach(tag => {
+          tags.add(tag);
+          counts.set(tag, (counts.get(tag) || 0) + 1);
+        });
+      });
+
+      setAllTags(Array.from(tags).sort((a, b) => a.localeCompare(b)));
+      setTagCounts(counts);
     } catch (err) {
       console.error('Error loading tags:', err);
-      if (hadithsData.length > 0) {
-        const tags = new Set<string>();
-        hadithsData.forEach(hadith => {
-          hadith.tag.split(',')
-              .map(t => t.trim())
-              .filter(t => t.length > 0)
-              .forEach(tag => tags.add(tag));
-        });
-        setAllTags(Array.from(tags).sort((a, b) => a.localeCompare(b)));
-      }
     }
+  };
+
+  const handleTagClick = (tag: string) => {
+    setSelectedTag(tag);
+    // Faire défiler jusqu'en haut de la page
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   useEffect(() => {
@@ -260,11 +313,10 @@ export const Hadiths: React.FC = () => {
 
         if (selectedTag) {
           const tagToFind = selectedTag.toLowerCase();
-          results = results.filter(hadith =>
-              hadith.tag.split(',')
-                  .map(t => t.trim().toLowerCase())
-                  .includes(tagToFind)
-          );
+          results = results.filter(hadith => {
+            const tags = getTagsArray(hadith.tag).map(t => t.toLowerCase());
+            return tags.includes(tagToFind);
+          });
         }
 
         if (searchTerm.trim()) {
@@ -396,6 +448,52 @@ export const Hadiths: React.FC = () => {
             </div>
           </motion.section>
 
+          {/* Section des tags populaires */}
+          {allTags.length > 0 && (
+              <motion.section
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="mb-8"
+              >
+                <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-amber-200 dark:border-emerald-800">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Tags className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                    <h3 className="text-lg font-semibold text-emerald-900 dark:text-emerald-300">
+                      Tags populaires
+                    </h3>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {allTags.slice(0, 12).map(tag => {
+                      const count = tagCounts.get(tag) || 0;
+                      return (
+                          <motion.button
+                              key={tag}
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => handleTagClick(tag)}
+                              className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300 ${
+                                  selectedTag === tag
+                                      ? 'bg-emerald-600 text-white shadow-md'
+                                      : 'bg-amber-100 dark:bg-emerald-800 text-amber-800 dark:text-emerald-200 hover:bg-amber-200 dark:hover:bg-emerald-700'
+                              }`}
+                          >
+                            <Hash className="h-3 w-3" />
+                            {tag}
+                            <span className="text-xs opacity-75">({count})</span>
+                          </motion.button>
+                      );
+                    })}
+                    {allTags.length > 12 && (
+                        <span className="text-sm text-gray-500 dark:text-gray-400 self-center">
+                      +{allTags.length - 12} autres tags
+                    </span>
+                    )}
+                  </div>
+                </div>
+              </motion.section>
+          )}
+
           <motion.section
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -422,37 +520,56 @@ export const Hadiths: React.FC = () => {
                 )}
               </div>
 
-              <div className="relative md:w-64">
+              <div className="relative md:w-80">
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
                   <Filter className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <select
-                    aria-label="Filtrer par thème"
-                    className="w-full pl-4 pr-10 py-3 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white appearance-none font-medium"
+                    aria-label="Filtrer par tag"
+                    className="w-full pl-4 pr-10 py-3 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white appearance-none font-medium cursor-pointer"
                     value={selectedTag || ''}
                     onChange={(e) => setSelectedTag(e.target.value || null)}
                 >
-                  <option value="">Tous les thèmes</option>
-                  {allTags.map(tag => (
-                      <option key={tag} value={tag}>{tag}</option>
-                  ))}
+                  <option value="">🏷️ Tous les tags</option>
+                  {allTags.map(tag => {
+                    const count = tagCounts.get(tag) || 0;
+                    return (
+                        <option key={tag} value={tag}>
+                          {tag} ({count})
+                        </option>
+                    );
+                  })}
                 </select>
               </div>
             </div>
 
-            {selectedTag && (
+            {(selectedTag || searchTerm) && (
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="mt-4 flex items-center justify-between bg-emerald-50 dark:bg-emerald-900/30 rounded-lg px-4 py-2"
+                    className="mt-4 flex items-center justify-between bg-gradient-to-r from-emerald-50 to-amber-50 dark:from-emerald-900/30 dark:to-amber-900/30 rounded-lg px-4 py-2"
                 >
-                  <span className="font-medium text-emerald-800 dark:text-emerald-200">
-                    Filtre : <span className="font-bold">{selectedTag}</span>
-                  </span>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-medium text-emerald-800 dark:text-emerald-200">
+                      Filtre actif :
+                    </span>
+                    {selectedTag && (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-600 text-white rounded-full text-sm">
+                        <Hash className="h-3 w-3" />
+                          {selectedTag}
+                      </span>
+                    )}
+                    {searchTerm && (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-600 text-white rounded-full text-sm">
+                        <Search className="h-3 w-3" />
+                        "{searchTerm}"
+                      </span>
+                    )}
+                  </div>
                   <button
-                      onClick={() => setSelectedTag(null)}
-                      aria-label="Retirer le filtre"
-                      className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-200 p-1"
+                      onClick={handleResetFilters}
+                      aria-label="Retirer les filtres"
+                      className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-200 p-1 transition-colors"
                   >
                     <X className="h-5 w-5" />
                   </button>
@@ -461,7 +578,7 @@ export const Hadiths: React.FC = () => {
           </motion.section>
 
           <section className="pb-16">
-            <AnimatePresence>
+            <AnimatePresence mode="wait">
               {filteredHadiths.length === 0 ? (
                   <motion.div
                       key="no-results"
@@ -508,6 +625,7 @@ export const Hadiths: React.FC = () => {
                             <HadithCard
                                 hadith={hadith}
                                 onClick={() => setSelectedHadith(hadith)}
+                                onTagClick={handleTagClick}
                             />
                           </motion.div>
                       ))}
@@ -532,6 +650,7 @@ export const Hadiths: React.FC = () => {
               <HadithModal
                   hadith={selectedHadith}
                   onClose={() => setSelectedHadith(null)}
+                  onTagClick={handleTagClick}
               />
           )}
         </AnimatePresence>
