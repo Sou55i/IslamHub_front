@@ -1,38 +1,40 @@
-import React, {useState, useEffect} from 'react';
-import {Link} from 'react-router-dom';
-import {Book, Heart, Users, Video, Clock, BookOpen, Moon, Sun, Menu, X, Bookmark} from 'lucide-react';
-import {useTheme} from '../context/ThemeContext';
-import moment from 'moment-hijri'; // Importer moment-hijri
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Book, Heart, Wind, Users, GraduationCap, Video, Clock, BookOpen, Moon, Sun, Menu, X, Bookmark, ScrollText } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
+import moment from 'moment-hijri';
 
 const navItems = [
-    {to: '/coran', icon: Bookmark, label: 'Coran'},
-    {to: '/hadiths', icon: Book, label: 'Hadiths'},
-    {to: '/dhikrs', icon: Heart, label: 'Dhikrs'},
-    {to: '/douaas', icon: Heart, label: 'Douaas'},
-    {to: '/savants', icon: Users, label: 'Savants'},
-    {to: '/biographies', icon: Users, label: 'Biographies'},
-    {to: '/multimedia', icon: Video, label: 'Multimedia'},
-    {to: '/ecoles', icon: BookOpen, label: 'Madhaheb'},
-    {to: '/prayer-times', icon: Clock, label: 'Horaires'},
+    { to: '/coran', icon: Bookmark, label: 'Coran' },
+    { to: '/hadiths', icon: Book, label: 'Hadiths' },
+    { to: '/dhikrs', icon: Wind, label: 'Dhikrs' },
+    { to: '/douaas', icon: Heart, label: 'Douaas' },
+    { to: '/savants', icon: GraduationCap, label: 'Savants' },
+    { to: '/biographies', icon: ScrollText, label: 'Biographies' },
+    { to: '/multimedia', icon: Video, label: 'Multimedia' },
+    { to: '/ecoles', icon: BookOpen, label: 'Madhaheb' },
+    { to: '/prayer-times', icon: Clock, label: 'Horaires' },
 ];
 
 export const Navigation: React.FC = () => {
-    const {theme, toggleTheme} = useTheme();
+    const { theme, toggleTheme } = useTheme();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [hijriDate, setHijriDate] = useState(''); // État pour stocker la date hijri
+    const [hijriDate, setHijriDate] = useState('');
+    const location = useLocation();
 
-    // Fonction pour mettre à jour la date hijri
     useEffect(() => {
         const updateHijriDate = () => {
-            const date = moment().format('iD iMMMM iYYYY'); // Format de la date hijri
-            setHijriDate(date);
+            setHijriDate(moment().format('iD iMMMM iYYYY'));
         };
-
-        updateHijriDate(); // Mettre à jour la date au chargement
-        const interval = setInterval(updateHijriDate, 86400000); // Mettre à jour la date chaque jour
-
-        return () => clearInterval(interval); // Nettoyer l'intervalle
+        updateHijriDate();
+        const interval = setInterval(updateHijriDate, 86400000);
+        return () => clearInterval(interval);
     }, []);
+
+    useEffect(() => {
+        setIsMenuOpen(false);
+    }, [location.pathname]);
 
     return (
         <nav className="bg-white dark:bg-gray-800 shadow-lg sticky top-0 z-50 transition-colors duration-200">
@@ -40,70 +42,92 @@ export const Navigation: React.FC = () => {
                 <div className="flex justify-between h-16">
                     <div className="flex items-center space-x-4">
                         <Link to="/" className="flex items-center group">
-              <span
-                  className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 font-amiri group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors">
-                IslamicHub
-              </span>
+                            <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 font-amiri group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors">
+                                IslamicHub
+                            </span>
                         </Link>
-                        {/* Afficher la date hijri */}
                         <span className="text-lg text-gray-600 dark:text-gray-300 font-amiri whitespace-nowrap">
-  {hijriDate}
-</span>
+                            {hijriDate}
+                        </span>
                     </div>
 
-                    {/* Mobile menu button */}
                     <div className="flex items-center md:hidden">
                         <button
                             onClick={toggleTheme}
+                            aria-label="Basculer le thème"
                             className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors mr-2"
                         >
-                            {theme === 'dark' ? <Sun className="w-5 h-5"/> : <Moon className="w-5 h-5"/>}
+                            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
                         </button>
                         <button
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
+                            aria-label={isMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+                            aria-expanded={isMenuOpen}
                             className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                         >
-                            {isMenuOpen ? <X className="w-6 h-6"/> : <Menu className="w-6 h-6"/>}
+                            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
                         </button>
                     </div>
 
-                    {/* Desktop menu */}
                     <div className="hidden md:flex items-center space-x-1">
-                        {navItems.map(({to, icon: Icon, label}) => (
-                            <Link
-                                key={to}
-                                to={to}
-                                className="flex items-center px-4 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all duration-200 mx-1"
-                            >
-                                <Icon className="w-4 h-4 mr-2"/>
-                                <span className="font-amiri truncate max-w-[100px]">{label}</span>
-                            </Link>
-                        ))}
+                        {navItems.map(({ to, icon: Icon, label }) => {
+                            const isActive = location.pathname === to;
+                            return (
+                                <Link
+                                    key={to}
+                                    to={to}
+                                    className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 mx-1 ${
+                                        isActive
+                                            ? 'text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/40'
+                                            : 'text-gray-700 dark:text-gray-200 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20'
+                                    }`}
+                                >
+                                    <Icon className="w-4 h-4 mr-2" />
+                                    <span className="font-amiri truncate max-w-[100px]">{label}</span>
+                                </Link>
+                            );
+                        })}
                         <button
                             onClick={toggleTheme}
+                            aria-label="Basculer le thème"
                             className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ml-2"
                         >
-                            {theme === 'dark' ? <Sun className="w-5 h-5"/> : <Moon className="w-5 h-5"/>}
+                            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
                         </button>
                     </div>
                 </div>
 
-                {/* Mobile menu */}
-                {isMenuOpen && (
-                    <div className="md:hidden py-4">
-                        {navItems.map(({to, icon: Icon, label}) => (
-                            <Link
-                                key={to}
-                                to={to}
-                                onClick={() => setIsMenuOpen(false)}
-                                className="flex items-center px-4 py-3 text-base font-medium text-gray-700 dark:text-gray-200 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all duration-200 rounded-md mb-1"
-                            >
-                                <Icon className="w-5 h-5 mr-3"/>
-                                <span className="font-amiri">{label}</span>
-                            </Link>
-                        ))}
-                    </div>
-                )}
+                <AnimatePresence>
+                    {isMenuOpen && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="md:hidden overflow-hidden"
+                        >
+                            <div className="py-4">
+                                {navItems.map(({ to, icon: Icon, label }) => {
+                                    const isActive = location.pathname === to;
+                                    return (
+                                        <Link
+                                            key={to}
+                                            to={to}
+                                            className={`flex items-center px-4 py-3 text-base font-medium transition-all duration-200 rounded-md mb-1 ${
+                                                isActive
+                                                    ? 'text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/40'
+                                                    : 'text-gray-700 dark:text-gray-200 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20'
+                                            }`}
+                                        >
+                                            <Icon className="w-5 h-5 mr-3" />
+                                            <span className="font-amiri">{label}</span>
+                                        </Link>
+                                    );
+                                })}
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
         </nav>
     );

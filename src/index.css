@@ -2,7 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
-
 html {
     scroll-behavior: smooth;
-  }
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #10b981;
+    border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #059669;
+}
+
+::selection {
+    background-color: #6ee7b7;
+    color: #064e3b;
+}
+
+*:focus-visible {
+    outline: 2px solid #10b981;
+    outline-offset: 2px;
+}
+
+.font-arabic,
+.font-amiri {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: 'kern' 1;
+    text-rendering: optimizeLegibility;
+}
