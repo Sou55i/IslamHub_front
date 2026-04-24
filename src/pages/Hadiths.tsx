@@ -5,10 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { dataService } from '../services/DataService';
 import type { Hadith as HadithType } from '../types';
 
-// ==========================================
-// Types
-// ==========================================
-
 interface Hadith extends HadithType {
   id: number;
   sujet: string;
@@ -22,9 +18,21 @@ interface Hadith extends HadithType {
   tag: string;
 }
 
-// ==========================================
-// Composants enfants
-// ==========================================
+const TOPIC_ROUTES: Record<string, string> = {
+  'Sahih Al Bukhari': '/hadith/albukhari',
+  'Sahih Muslim': '/hadith/muslim',
+  'رياض الصالحين': '/hadith/riyadhassalihin',
+  'كتاب ذكر الموت': '/hadith/dhikralmout',
+  'الأربعون في التصوف': '/hadith/arbaoune-tasawwuf',
+  'المنتقى من صحيح مسلم': '/hadith/montaqa-sahihmuslim',
+  'Croyance': '/hadith/croyance',
+  'Salat': '/hadith/salat',
+  'Jeûne': '/hadith/jeune',
+  'Zakat': '/hadith/zakat',
+  'Mariage': '/hadith/mariage',
+  'Ventes': '/hadith/ventes',
+  'Famille': '/hadith/famille',
+};
 
 const HadithCard: React.FC<{ hadith: Hadith; onClick: () => void }> = ({ hadith, onClick }) => (
     <motion.div
@@ -32,14 +40,9 @@ const HadithCard: React.FC<{ hadith: Hadith; onClick: () => void }> = ({ hadith,
         onClick={onClick}
         className="relative bg-gradient-to-br from-amber-50 to-emerald-50 dark:from-emerald-900 dark:to-amber-900 rounded-2xl p-6 shadow-xl border border-amber-200 dark:border-emerald-800 space-y-4 overflow-hidden cursor-pointer h-full flex flex-col"
     >
-      {/* Décoration orientale */}
       <div className="absolute top-0 right-0 w-24 h-24 opacity-20">
         <svg viewBox="0 0 100 100" className="text-amber-500 dark:text-emerald-400">
-          <path
-              fill="currentColor"
-              d="M20,20 Q30,10 40,20 T60,20 T80,20 T100,20"
-              className="transform rotate-45"
-          />
+          <path fill="currentColor" d="M20,20 Q30,10 40,20 T60,20 T80,20 T100,20" className="transform rotate-45" />
         </svg>
       </div>
 
@@ -92,104 +95,95 @@ const HadithCard: React.FC<{ hadith: Hadith; onClick: () => void }> = ({ hadith,
     </motion.div>
 );
 
-const HadithModal: React.FC<{
-  hadith: Hadith | null;
-  onClose: () => void
-}> = ({ hadith, onClose }) => {
-  if (!hadith) return null;
-
-  return (
+const HadithModal: React.FC<{ hadith: Hadith; onClose: () => void }> = ({ hadith, onClose }) => (
+    <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+        onClick={onClose}
+    >
       <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
-          onClick={onClose}
+          initial={{ scale: 0.9, y: 50 }}
+          animate={{ scale: 1, y: 0 }}
+          exit={{ scale: 0.9, y: 50 }}
+          onClick={(e) => e.stopPropagation()}
+          className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto relative"
       >
-        <motion.div
-            initial={{ scale: 0.9, y: 50 }}
-            animate={{ scale: 1, y: 0 }}
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto relative"
+        <button
+            onClick={onClose}
+            aria-label="Fermer"
+            className="absolute top-4 right-4 p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
         >
-          <button
-              onClick={onClose}
-              className="absolute top-4 right-4 p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-          >
-            <X className="h-6 w-6" />
-          </button>
+          <X className="h-6 w-6" />
+        </button>
 
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold text-amber-800 dark:text-amber-200 font-amiri">
-                  {hadith.sujet}
-                </h2>
-                {hadith.rapporteur && (
-                    <p className="text-emerald-700 dark:text-emerald-400 mt-1">
-                      Rapporteur: {hadith.rapporteur}
-                    </p>
-                )}
-                {hadith.narrateur && (
-                    <p className="text-gray-600 dark:text-gray-400 mt-1">
-                      Narrateur: {hadith.narrateur}
-                    </p>
-                )}
-              </div>
-
-              {hadith.statut && (
-                  <span className="bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 px-3 py-1 rounded-full text-sm">
-                {hadith.statut}
-              </span>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-amber-800 dark:text-amber-200 font-amiri">
+                {hadith.sujet}
+              </h2>
+              {hadith.rapporteur && (
+                  <p className="text-emerald-700 dark:text-emerald-400 mt-1">
+                    Rapporteur: {hadith.rapporteur}
+                  </p>
+              )}
+              {hadith.narrateur && (
+                  <p className="text-gray-600 dark:text-gray-400 mt-1">
+                    Narrateur: {hadith.narrateur}
+                  </p>
               )}
             </div>
 
-            <div className="bg-amber-50 dark:bg-gray-700 p-6 rounded-lg">
-              <p className="text-3xl text-gray-900 dark:text-white font-arabic leading-loose text-right">
-                {hadith.texte_arabe}
-              </p>
+            {hadith.statut && (
+                <span className="bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 px-3 py-1 rounded-full text-sm">
+                  {hadith.statut}
+                </span>
+            )}
+          </div>
 
-              {hadith.phonétique && (
-                  <div className="mt-6 bg-white dark:bg-gray-600 p-4 rounded">
-                    <p className="text-sm text-amber-700 dark:text-amber-300 mb-2">Phonétique:</p>
-                    <p className="text-gray-700 dark:text-gray-200">{hadith.phonetique}</p>
-                  </div>
-              )}
+          <div className="bg-amber-50 dark:bg-gray-700 p-6 rounded-lg">
+            <p className="text-3xl text-gray-900 dark:text-white font-arabic leading-loose text-right">
+              {hadith.texte_arabe}
+            </p>
 
-              {hadith.texte_francais && (
-                  <div className="mt-6 pl-4 border-l-4 border-emerald-500">
-                    <p className="text-sm text-emerald-700 dark:text-emerald-400 mb-2">Traduction:</p>
-                    <p className="text-gray-700 dark:text-gray-300">{hadith.texte_francais}</p>
-                  </div>
-              )}
-            </div>
-
-            {hadith.explication && (
-                <div className="mt-6 bg-emerald-50 dark:bg-emerald-900/30 p-6 rounded-lg">
-                  <p className="text-lg font-bold text-emerald-800 dark:text-emerald-300 mb-3">Explication:</p>
-                  <p className="text-gray-700 dark:text-gray-300">{hadith.explication}</p>
+            {hadith.phonétique && (
+                <div className="mt-6 bg-white dark:bg-gray-600 p-4 rounded">
+                  <p className="text-sm text-amber-700 dark:text-amber-300 mb-2">Phonétique:</p>
+                  <p className="text-gray-700 dark:text-gray-200">{hadith.phonétique}</p>
                 </div>
             )}
 
-            <div className="flex flex-wrap gap-2">
-              {hadith.tag.split(',').map(tag => (
-                  <span
-                      key={tag.trim()}
-                      className="text-xs bg-amber-100 dark:bg-emerald-800 text-amber-800 dark:text-emerald-200 px-3 py-1 rounded-full"
-                  >
-                {tag.trim()}
-              </span>
-              ))}
-            </div>
+            {hadith.texte_francais && (
+                <div className="mt-6 pl-4 border-l-4 border-emerald-500">
+                  <p className="text-sm text-emerald-700 dark:text-emerald-400 mb-2">Traduction:</p>
+                  <p className="text-gray-700 dark:text-gray-300">{hadith.texte_francais}</p>
+                </div>
+            )}
           </div>
-        </motion.div>
-      </motion.div>
-  );
-};
 
-// ==========================================
-// Composant principal
-// ==========================================
+          {hadith.explication && (
+              <div className="mt-6 bg-emerald-50 dark:bg-emerald-900/30 p-6 rounded-lg">
+                <p className="text-lg font-bold text-emerald-800 dark:text-emerald-300 mb-3">Explication:</p>
+                <p className="text-gray-700 dark:text-gray-300">{hadith.explication}</p>
+              </div>
+          )}
+
+          <div className="flex flex-wrap gap-2">
+            {hadith.tag.split(',').map(tag => (
+                <span
+                    key={tag.trim()}
+                    className="text-xs bg-amber-100 dark:bg-emerald-800 text-amber-800 dark:text-emerald-200 px-3 py-1 rounded-full"
+                >
+                  {tag.trim()}
+                </span>
+            ))}
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+);
 
 export const Hadiths: React.FC = () => {
   const navigate = useNavigate();
@@ -203,26 +197,12 @@ export const Hadiths: React.FC = () => {
   const [selectedHadith, setSelectedHadith] = useState<Hadith | null>(null);
   const [isSearching, setIsSearching] = useState(false);
 
-  const topics = [
-    'Sahih Al Bukhari',
-    'Sahih Muslim',
-    'رياض الصالحين',
-    'كتاب ذكر الموت',
-    'الأربعون في التصوف',
-    'المنتقى من صحيح مسلم',
-    'Croyance',
-    'Salat',
-    'Jeûne',
-    'Zakat',
-    'Mariage',
-    'Ventes',
-    'Famille'
-  ];
+  const topics = Object.keys(TOPIC_ROUTES);
 
-  // Chargement initial des données
   useEffect(() => {
     loadHadiths();
     loadTags();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadHadiths = async () => {
@@ -246,7 +226,6 @@ export const Hadiths: React.FC = () => {
       setAllTags(tags);
     } catch (err) {
       console.error('Error loading tags:', err);
-      // Extraction locale des tags en fallback
       if (hadithsData.length > 0) {
         const tags = new Set<string>();
         hadithsData.forEach(hadith => {
@@ -260,10 +239,8 @@ export const Hadiths: React.FC = () => {
     }
   };
 
-  // Recherche côté serveur ou local
   useEffect(() => {
     const searchHadiths = async () => {
-      // Si pas de terme de recherche et pas de tag sélectionné, afficher tous les hadiths
       if (!searchTerm.trim() && !selectedTag) {
         setFilteredHadiths(hadithsData);
         return;
@@ -271,7 +248,6 @@ export const Hadiths: React.FC = () => {
 
       setIsSearching(true);
       try {
-        // Essayer la recherche via API
         const response = await dataService.searchHadiths(
             searchTerm,
             selectedTag,
@@ -280,10 +256,8 @@ export const Hadiths: React.FC = () => {
         setFilteredHadiths(response.data);
       } catch (err) {
         console.warn('API search failed, falling back to local search:', err);
-        // Fallback : recherche locale
         let results = [...hadithsData];
 
-        // Filtre par tag exact
         if (selectedTag) {
           const tagToFind = selectedTag.toLowerCase();
           results = results.filter(hadith =>
@@ -293,7 +267,6 @@ export const Hadiths: React.FC = () => {
           );
         }
 
-        // Filtre par texte
         if (searchTerm.trim()) {
           const term = searchTerm.toLowerCase().trim();
           results = results.filter(hadith =>
@@ -311,7 +284,6 @@ export const Hadiths: React.FC = () => {
       }
     };
 
-    // Debounce la recherche
     const timeoutId = setTimeout(() => {
       if (hadithsData.length > 0) {
         searchHadiths();
@@ -322,49 +294,11 @@ export const Hadiths: React.FC = () => {
   }, [searchTerm, selectedTag, hadithsData]);
 
   const handleTopicClick = (topic: string) => {
-    switch (topic) {
-      case 'Sahih Al Bukhari':
-        navigate('/hadith/albukhari');
-        break;
-      case 'Sahih Muslim':
-        navigate('/hadith/muslim');
-        break;
-      case 'رياض الصالحين':
-        navigate('/hadith/riyadhassalihin');
-        break;
-      case 'كتاب ذكر الموت':
-        navigate('/hadith/dhikralmout');
-        break;
-      case 'الأربعون في التصوف':
-        navigate('/hadith/arbaoune-tasawwuf');
-        break;
-      case 'المنتقى من صحيح مسلم':
-        navigate('/hadith/montaqa-sahihmuslim');
-        break;
-      case 'Croyance':
-        navigate('/hadith/croyance');
-        break;
-      case 'Salat':
-        navigate('/hadith/salat');
-        break;
-      case 'Jeûne':
-        navigate('/hadith/jeune');
-        break;
-      case 'Zakat':
-        navigate('/hadith/zakat');
-        break;
-      case 'Mariage':
-        navigate('/hadith/mariage');
-        break;
-      case 'Ventes':
-        navigate('/hadith/ventes');
-        break;
-      case 'Famille':
-        navigate('/hadith/famille');
-        break;
-      default:
-        console.warn(`Aucune route définie pour le thème : ${topic}`);
-        break;
+    const route = TOPIC_ROUTES[topic];
+    if (route) {
+      navigate(route);
+    } else {
+      console.warn(`Aucune route définie pour le thème : ${topic}`);
     }
   };
 
@@ -373,7 +307,6 @@ export const Hadiths: React.FC = () => {
     setSelectedTag(null);
   };
 
-  // État de chargement
   if (isLoading) {
     return (
         <div className="min-h-screen bg-gradient-to-b from-amber-50 to-emerald-50 dark:from-gray-900 dark:to-emerald-950 flex items-center justify-center">
@@ -387,7 +320,6 @@ export const Hadiths: React.FC = () => {
     );
   }
 
-  // État d'erreur
   if (error) {
     return (
         <div className="min-h-screen bg-gradient-to-b from-amber-50 to-emerald-50 dark:from-gray-900 dark:to-emerald-950 flex items-center justify-center">
@@ -410,7 +342,6 @@ export const Hadiths: React.FC = () => {
 
   return (
       <div className="min-h-screen bg-gradient-to-b from-amber-50 to-emerald-50 dark:from-gray-900 dark:to-emerald-950">
-        {/* En-tête avec motif islamique */}
         <motion.header
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -434,7 +365,6 @@ export const Hadiths: React.FC = () => {
         </motion.header>
 
         <main className="container mx-auto px-4 py-12 -mt-12 relative z-10">
-          {/* Navigation rapide */}
           <motion.section
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -450,7 +380,7 @@ export const Hadiths: React.FC = () => {
                       key={topic}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.1 + i * 0.05 }}
+                      transition={{ delay: 0.1 + Math.min(i, 10) * 0.05 }}
                       whileHover={{ y: -5 }}
                       className="cursor-pointer bg-white dark:bg-gray-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/50 text-center rounded-xl p-4 shadow-lg border border-emerald-100 dark:border-emerald-800 transition-all"
                       onClick={() => handleTopicClick(topic)}
@@ -459,19 +389,18 @@ export const Hadiths: React.FC = () => {
                       <BookOpen className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                     </div>
                     <span className="text-sm font-medium text-emerald-800 dark:text-emerald-300">
-                  {topic}
-                </span>
+                      {topic}
+                    </span>
                   </motion.div>
               ))}
             </div>
           </motion.section>
 
-          {/* Recherche et filtres */}
           <motion.section
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 mb-12 sticky top-4 z-20 border border-emerald-100 dark:border-emerald-900"
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 mb-12 sticky top-20 z-20 border border-emerald-100 dark:border-emerald-900"
           >
             <div className="flex flex-col md:flex-row gap-6">
               <div className="flex-1 relative">
@@ -480,6 +409,7 @@ export const Hadiths: React.FC = () => {
                 </div>
                 <input
                     type="text"
+                    aria-label="Rechercher un hadith"
                     placeholder="Rechercher un hadith..."
                     className="w-full pl-12 pr-6 py-3 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-lg font-amiri"
                     value={searchTerm}
@@ -497,6 +427,7 @@ export const Hadiths: React.FC = () => {
                   <Filter className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <select
+                    aria-label="Filtrer par thème"
                     className="w-full pl-4 pr-10 py-3 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white appearance-none font-medium"
                     value={selectedTag || ''}
                     onChange={(e) => setSelectedTag(e.target.value || null)}
@@ -515,11 +446,12 @@ export const Hadiths: React.FC = () => {
                     animate={{ opacity: 1 }}
                     className="mt-4 flex items-center justify-between bg-emerald-50 dark:bg-emerald-900/30 rounded-lg px-4 py-2"
                 >
-              <span className="font-medium text-emerald-800 dark:text-emerald-200">
-                Filtre : <span className="font-bold">{selectedTag}</span>
-              </span>
+                  <span className="font-medium text-emerald-800 dark:text-emerald-200">
+                    Filtre : <span className="font-bold">{selectedTag}</span>
+                  </span>
                   <button
                       onClick={() => setSelectedTag(null)}
+                      aria-label="Retirer le filtre"
                       className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-200 p-1"
                   >
                     <X className="h-5 w-5" />
@@ -528,7 +460,6 @@ export const Hadiths: React.FC = () => {
             )}
           </motion.section>
 
-          {/* Résultats */}
           <section className="pb-16">
             <AnimatePresence>
               {filteredHadiths.length === 0 ? (
@@ -571,7 +502,7 @@ export const Hadiths: React.FC = () => {
                               key={`${hadith.id}-${index}`}
                               initial={{ opacity: 0, y: 20 }}
                               animate={{ opacity: 1, y: 0 }}
-                              transition={{ delay: index * 0.05 }}
+                              transition={{ delay: Math.min(index, 10) * 0.05 }}
                               layout
                           >
                             <HadithCard
@@ -587,7 +518,6 @@ export const Hadiths: React.FC = () => {
           </section>
         </main>
 
-        {/* Pied de page décoratif */}
         <footer className="bg-emerald-900 dark:bg-emerald-950 text-white py-12">
           <div className="container mx-auto px-4 text-center">
             <p className="text-emerald-300 mb-4 font-amiri text-xl">
@@ -597,11 +527,14 @@ export const Hadiths: React.FC = () => {
           </div>
         </footer>
 
-        {/* Modal */}
-        <HadithModal
-            hadith={selectedHadith}
-            onClose={() => setSelectedHadith(null)}
-        />
+        <AnimatePresence>
+          {selectedHadith && (
+              <HadithModal
+                  hadith={selectedHadith}
+                  onClose={() => setSelectedHadith(null)}
+              />
+          )}
+        </AnimatePresence>
       </div>
   );
 };
