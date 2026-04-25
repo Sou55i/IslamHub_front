@@ -1,104 +1,113 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BookOpen, Search, Filter, X, Star, ChevronRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import  douaasData from '../data/douaa.json';
+import { Search, Filter, X, Star, ChevronRight, Loader, Tags, Hash, ChevronDown, Heart } from 'lucide-react';
+import { dataService } from '../services/DataService';
+import type { Douaa as DouaaType } from '../types';
 
-interface Douaa {
+interface Douaa extends DouaaType {
     id: number;
     sujet: string;
     texte_arabe: string;
     texte_francais: string | null;
     phonetique: string | null;
     explication: string | null;
-    commentaire: string;
+    commentaire: string | null;
     type_id: number;
-    tag: string;
+    tag: string | null;
 }
 
-const DouaaCard: React.FC<{ douaa: Douaa; onClick: () => void }> = ({ douaa, onClick }) => (
-    <motion.div
-        whileHover={{ scale: 1.01 }}
-        onClick={onClick}
-        className="relative bg-gradient-to-br from-amber-50 to-emerald-50 dark:from-emerald-900 dark:to-amber-900 rounded-2xl p-6 shadow-xl border border-amber-200 dark:border-emerald-800 space-y-4 overflow-hidden cursor-pointer h-full flex flex-col"
-    >
-        {/* Décoration orientale */}
-        <div className="absolute top-0 right-0 w-24 h-24 opacity-20">
-            <svg viewBox="0 0 100 100" className="text-amber-500 dark:text-emerald-400">
-                <path
-                    fill="currentColor"
-                    d="M20,20 Q30,10 40,20 T60,20 T80,20 T100,20"
-                    className="transform rotate-45"
-                />
-            </svg>
-        </div>
+// Fonction utilitaire pour extraire les tags
+const getTagsArray = (tag: string | null, sujet?: string): string[] => {
+    if (tag && tag.trim()) {
+        return tag.split(',').map(t => t.trim()).filter(t => t.length > 0);
+    }
 
-        {douaa.sujet && (
-            <div className="flex items-center">
-                <Star className="h-5 w-5 text-amber-500 dark:text-amber-300 mr-2" />
-                <h3 className="text-xl font-bold text-amber-800 dark:text-amber-200 font-amiri">
-                    {douaa.sujet}
-                </h3>
+    // Fallback : utiliser le sujet comme tag
+    if (sujet && sujet.trim() && sujet !== 'Sujet inconnu') {
+        return [sujet.trim()];
+    }
+
+    return [];
+};
+
+const DouaaCard: React.FC<{ douaa: Douaa; onClick: () => void; onTagClick?: (tag: string) => void }> = ({ douaa, onClick, onTagClick }) => {
+    const tags = getTagsArray(douaa.tag, douaa.sujet);
+
+    const handleTagClick = (e: React.MouseEvent, tag: string) => {
+        e.stopPropagation();
+        if (onTagClick) {
+            onTagClick(tag);
+        }
+    };
+
+    return (
+        <motion.div
+            whileHover={{ scale: 1.01 }}
+            onClick={onClick}
+            className="relative bg-gradient-to-br from-amber-50 to-emerald-50 dark:from-emerald-900 dark:to-amber-900 rounded-2xl p-6 shadow-xl border border-amber-200 dark:border-emerald-800 space-y-4 overflow-hidden cursor-pointer h-full flex flex-col transition-all duration-300 hover:shadow-2xl"
+        >
+            <div className="absolute top-0 right-0 w-24 h-24 opacity-20">
+                <svg viewBox="0 0 100 100" className="text-amber-500 dark:text-emerald-400">
+                    <path fill="currentColor" d="M20,20 Q30,10 40,20 T60,20 T80,20 T100,20" className="transform rotate-45" />
+                </svg>
             </div>
-        )}
 
-        <div className="bg-white dark:bg-gray-800/80 p-4 rounded-lg border border-amber-100 dark:border-emerald-800 flex-grow">
-            <p className="text-2xl text-gray-900 dark:text-white font-arabic leading-loose text-right line-clamp-3">
-                {douaa.texte_arabe}
-            </p>
-
-            {douaa.texte_francais && (
-                <div className="mt-4 pl-4 border-l-4 border-amber-300 dark:border-emerald-600 line-clamp-2">
-                    <p className="text-sm text-amber-700 dark:text-amber-200 mb-1">Signification :</p>
-                    <p className="text-gray-700 dark:text-gray-300">{douaa.texte_francais}</p>
+            {douaa.sujet && (
+                <div className="flex items-center">
+                    <Star className="h-5 w-5 text-amber-500 dark:text-amber-300 mr-2" />
+                    <h3 className="text-xl font-bold text-amber-800 dark:text-amber-200 font-amiri">
+                        {douaa.sujet}
+                    </h3>
                 </div>
             )}
-            {douaa.phonetique && (
-                <div className="mt-4 pl-4 border-l-4 border-amber-300 dark:border-emerald-600 line-clamp-2">
-                    <p className="text-sm text-amber-700 dark:text-amber-200 mb-1">phonetique :</p>
-                    <p className="text-gray-700 dark:text-gray-300">{douaa.phonetique}</p>
+
+            <div className="bg-white dark:bg-gray-800/80 p-4 rounded-lg border border-amber-100 dark:border-emerald-800 flex-grow">
+                <p className="text-2xl text-gray-900 dark:text-white font-arabic leading-loose text-right line-clamp-3">
+                    {douaa.texte_arabe}
+                </p>
+
+                {douaa.texte_francais && (
+                    <div className="mt-4 pl-4 border-l-4 border-amber-300 dark:border-emerald-600 line-clamp-2">
+                        <p className="text-sm text-amber-700 dark:text-amber-200 mb-1">Signification :</p>
+                        <p className="text-gray-700 dark:text-gray-300">{douaa.texte_francais}</p>
+                    </div>
+                )}
+            </div>
+
+            {tags.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                    {tags.map(tag => (
+                        <motion.span
+                            key={tag}
+                            whileHover={{ scale: 1.05 }}
+                            onClick={(e) => handleTagClick(e, tag)}
+                            className="text-xs bg-amber-100 dark:bg-emerald-800 text-amber-800 dark:text-emerald-200 px-3 py-1 rounded-full flex items-center cursor-pointer hover:bg-amber-200 dark:hover:bg-emerald-700 transition-colors"
+                        >
+                            <Hash className="h-3 w-3 mr-1" />
+                            {tag}
+                        </motion.span>
+                    ))}
                 </div>
             )}
-            {douaa.explication && (
-                <div className="mt-4 pl-4 border-l-4 border-amber-300 dark:border-emerald-600 line-clamp-2">
-                    <p className="text-sm text-amber-700 dark:text-amber-200 mb-1">explication :</p>
-                    <p className="text-gray-700 dark:text-gray-300">{douaa.explication}</p>
-                </div>
-            )}
-            {douaa.commentaire && (
-                <div className="mt-4 pl-4 border-l-4 border-amber-300 dark:border-emerald-600 line-clamp-2">
-                    <p className="text-sm text-amber-700 dark:text-amber-200 mb-1">commentaire :</p>
-                    <p className="text-gray-700 dark:text-gray-300">{douaa.commentaire}</p>
-                </div>
-            )}
-        </div>
 
-        <div className="flex flex-wrap gap-2">
-            {douaa.tag.split(',').map(tag => (
-                <motion.span
-                    key={tag.trim()}
-                    whileHover={{ scale: 1.05 }}
-                    className="text-xs bg-amber-100 dark:bg-emerald-800 text-amber-800 dark:text-emerald-200 px-3 py-1 rounded-full flex items-center"
-                >
-                    <ChevronRight className="h-3 w-3 mr-1" />
-                    {tag.trim()}
-                </motion.span>
-            ))}
-        </div>
+            <div className="mt-auto pt-4 text-center">
+                <button className="text-emerald-600 dark:text-emerald-400 text-sm font-medium hover:underline">
+                    Lire la suite...
+                </button>
+            </div>
+        </motion.div>
+    );
+};
 
-        <div className="mt-auto pt-4 text-center">
-            <button className="text-emerald-600 dark:text-emerald-400 text-sm font-medium hover:underline">
-                Lire la suite...
-            </button>
-        </div>
-    </motion.div>
-);
+const DouaaModal: React.FC<{ douaa: Douaa; onClose: () => void; onTagClick?: (tag: string) => void }> = ({ douaa, onClose, onTagClick }) => {
+    const tags = getTagsArray(douaa.tag, douaa.sujet);
 
-const DouaaModal: React.FC<{
-    douaa: Douaa | null;
-    onClose: () => void
-}> = ({ douaa, onClose }) => {
-    if (!douaa) return null;
+    const handleTagClick = (tag: string) => {
+        if (onTagClick) {
+            onTagClick(tag);
+            onClose();
+        }
+    };
 
     return (
         <motion.div
@@ -111,11 +120,13 @@ const DouaaModal: React.FC<{
             <motion.div
                 initial={{ scale: 0.9, y: 50 }}
                 animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.9, y: 50 }}
                 onClick={(e) => e.stopPropagation()}
                 className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto relative"
             >
                 <button
                     onClick={onClose}
+                    aria-label="Fermer"
                     className="absolute top-4 right-4 p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
                 >
                     <X className="h-6 w-6" />
@@ -127,10 +138,7 @@ const DouaaModal: React.FC<{
                             <h2 className="text-2xl font-bold text-amber-800 dark:text-amber-200 font-amiri">
                                 {douaa.sujet}
                             </h2>
-
                         </div>
-
-
                     </div>
 
                     <div className="bg-amber-50 dark:bg-gray-700 p-6 rounded-lg">
@@ -151,158 +159,306 @@ const DouaaModal: React.FC<{
                                 <p className="text-gray-700 dark:text-gray-300">{douaa.texte_francais}</p>
                             </div>
                         )}
+
                         {douaa.explication && (
                             <div className="mt-6 bg-emerald-50 dark:bg-emerald-900/30 p-6 rounded-lg">
                                 <p className="text-lg font-bold text-emerald-800 dark:text-emerald-300 mb-3">Explication:</p>
                                 <p className="text-gray-700 dark:text-gray-300">{douaa.explication}</p>
                             </div>
                         )}
+
                         {douaa.commentaire && (
                             <div className="mt-6 bg-emerald-50 dark:bg-emerald-900/30 p-6 rounded-lg">
-                                <p className="text-lg font-bold text-emerald-800 dark:text-emerald-300 mb-3">Explication:</p>
+                                <p className="text-lg font-bold text-emerald-800 dark:text-emerald-300 mb-3">Commentaire:</p>
                                 <p className="text-gray-700 dark:text-gray-300">{douaa.commentaire}</p>
                             </div>
                         )}
                     </div>
 
-
-
-                    <div className="flex flex-wrap gap-2">
-                        {douaa.tag.split(',').map(tag => (
-                            <span
-                                key={tag.trim()}
-                                className="text-xs bg-amber-100 dark:bg-emerald-800 text-amber-800 dark:text-emerald-200 px-3 py-1 rounded-full"
-                            >
-                {tag.trim()}
-              </span>
-                        ))}
-                    </div>
+                    {tags.length > 0 && (
+                        <div>
+                            <p className="text-sm font-semibold text-amber-700 dark:text-amber-300 mb-2 flex items-center gap-2">
+                                <Tags className="h-4 w-4" />
+                                Tags associés :
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                                {tags.map(tag => (
+                                    <motion.span
+                                        key={tag}
+                                        whileHover={{ scale: 1.05 }}
+                                        onClick={() => handleTagClick(tag)}
+                                        className="cursor-pointer text-xs bg-amber-100 dark:bg-emerald-800 text-amber-800 dark:text-emerald-200 px-3 py-1 rounded-full hover:bg-amber-200 dark:hover:bg-emerald-700 transition-colors"
+                                    >
+                                        <Hash className="h-3 w-3 inline mr-1" />
+                                        {tag}
+                                    </motion.span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </motion.div>
         </motion.div>
     );
 };
 
+// Composant pour le sélecteur de tags personnalisé
+const TagSelector: React.FC<{
+    allTags: string[];
+    selectedTag: string | null;
+    tagCounts: Map<string, number>;
+    onTagSelect: (tag: string | null) => void;
+}> = ({ allTags, selectedTag, tagCounts, onTagSelect }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    const filteredTags = allTags.filter(tag =>
+        tag.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    return (
+        <div className="relative" ref={dropdownRef}>
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:border-emerald-300 dark:hover:border-emerald-700 transition-colors"
+            >
+                <div className="flex items-center gap-2">
+                    <Filter className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                    <span className="font-medium">
+              {selectedTag ? `Tag: ${selectedTag}` : 'Filtrer par tag'}
+            </span>
+                </div>
+                <ChevronDown className={`h-5 w-5 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-emerald-200 dark:border-emerald-800 z-50 overflow-hidden"
+                    >
+                        <div className="p-3 border-b border-emerald-200 dark:border-emerald-800">
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Rechercher un tag..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full pl-9 pr-3 py-2 rounded-lg border border-emerald-200 dark:border-emerald-700 bg-gray-50 dark:bg-gray-900 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="max-h-80 overflow-y-auto">
+                            <button
+                                onClick={() => {
+                                    onTagSelect(null);
+                                    setIsOpen(false);
+                                    setSearchQuery('');
+                                }}
+                                className={`w-full text-left px-4 py-2 hover:bg-emerald-50 dark:hover:bg-emerald-900/50 transition-colors ${
+                                    !selectedTag ? 'bg-emerald-100 dark:bg-emerald-900/30 font-medium' : ''
+                                }`}
+                            >
+                                <div className="flex items-center justify-between">
+                                    <span>🏷️ Tous les tags</span>
+                                    <span className="text-xs text-gray-500">{allTags.length} tags</span>
+                                </div>
+                            </button>
+
+                            {filteredTags.length > 0 ? (
+                                filteredTags.map(tag => {
+                                    const count = tagCounts.get(tag) || 0;
+                                    return (
+                                        <button
+                                            key={tag}
+                                            onClick={() => {
+                                                onTagSelect(tag);
+                                                setIsOpen(false);
+                                                setSearchQuery('');
+                                            }}
+                                            className={`w-full text-left px-4 py-2 hover:bg-emerald-50 dark:hover:bg-emerald-900/50 transition-colors flex items-center justify-between ${
+                                                selectedTag === tag ? 'bg-emerald-100 dark:bg-emerald-900/30 font-medium' : ''
+                                            }`}
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <Hash className="h-4 w-4 text-emerald-500" />
+                                                <span>{tag}</span>
+                                            </div>
+                                            <span className="text-xs text-gray-500">({count})</span>
+                                        </button>
+                                    );
+                                })
+                            ) : (
+                                <div className="px-4 py-8 text-center text-gray-500">
+                                    Aucun tag trouvé pour "{searchQuery}"
+                                </div>
+                            )}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+};
+
 export const Douaas: React.FC = () => {
-    const navigate = useNavigate();
+    const [douaasData, setDouaasData] = useState<Douaa[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedTag, setSelectedTag] = useState<string | null>(null);
     const [allTags, setAllTags] = useState<string[]>([]);
-    const [filteredDouaas, setFilteredDouaas] = useState<Douaa[]>(douaasData);
+    const [filteredDouaas, setFilteredDouaas] = useState<Douaa[]>([]);
     const [selectedDouaa, setSelectedDouaa] = useState<Douaa | null>(null);
+    const [tagCounts, setTagCounts] = useState<Map<string, number>>(new Map());
 
-    const topics = [
-        'Sahih Al Bukhari',
-        'Sahih Muslim',
-        'رياض الصالحين',
-        'كتاب ذكر الموت',
-        'الأربعون في التصوف',
-        'المنتقى من صحيح مسلم',
-        'Croyance',
-        'Salat',
-        'Jeûne',
-        'Zakat',
-        'Mariage',
-        'Ventes',
-        'Famille'
-    ];
+    useEffect(() => {
+        loadDouaas();
+    }, []);
 
-    const handleTopicClick = (topic: string) => {
-        switch (topic) {
-            case 'Sahih Al Bukhari':
-                navigate('/hadith/albukhari');
-                break;
-            case 'Sahih Muslim':
-                navigate('/hadith/muslim');
-                break;
-            case 'رياض الصالحين':
-                navigate('/hadith/riyadhassalihin');
-                break;
-            case 'كتاب ذكر الموت':
-                navigate('/hadith/dhikralmout');
-                break;
-            case 'الأربعون في التصوف':
-                navigate('/hadith/arbaoune-tasawwuf');
-                break;
-            case 'المنتقى من صحيح مسلم':
-                navigate('/hadith/montaqa-sahihmuslim');
-                break;
-            case 'Croyance':
-                navigate('/hadith/croyance');
-                break;
-            case 'Salat':
-                navigate('/hadith/salat');
-                break;
-            case 'Jeûne':
-                navigate('/hadith/jeune');
-                break;
-            case 'Zakat':
-                navigate('/hadith/zakat');
-                break;
-            case 'Mariage':
-                navigate('/hadith/mariage');
-                break;
-            case 'Ventes':
-                navigate('/hadith/ventes');
-                break;
-            case 'Famille':
-                navigate('/hadith/famille');
-                break;
-            default:
-                console.warn(`Aucune route définie pour le thème : ${topic}`);
-                break;
+    const loadDouaas = async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const response = await dataService.getDouaas();
+            console.log('Loaded douaas:', response.data.length);
+            setDouaasData(response.data);
+            setFilteredDouaas(response.data);
+            loadTagsFromData(response.data);
+        } catch (err) {
+            console.error('Error loading douaas:', err);
+            setError('Erreur lors du chargement des invocations. Veuillez réessayer.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
+    const loadTagsFromData = (douaas: Douaa[]) => {
+        try {
+            const tags = new Set<string>();
+            const counts = new Map<string, number>();
 
+            douaas.forEach(douaa => {
+                const tagArray = getTagsArray(douaa.tag, douaa.sujet);
+                console.log(`Douaa ${douaa.id} tags:`, tagArray);
+                tagArray.forEach(tag => {
+                    tags.add(tag);
+                    counts.set(tag, (counts.get(tag) || 0) + 1);
+                });
+            });
 
-    // Extraction des tags uniques
-    // Extraction des tags uniques
-    useEffect(() => {
-        const tags = new Set<string>();
-        douaasData.forEach(douaa => {
-            douaa.tag.split(',')
-                .map(t => t.trim())
-                .filter(t => t.length > 0)
-                .forEach(tag => tags.add(tag));
-        });
-        // Tri alphabétique ici
-        setAllTags(Array.from(tags).sort((a, b) => a.localeCompare(b)));
-    }, []);
+            const sortedTags = Array.from(tags).sort((a, b) => a.localeCompare(b));
+            console.log('All unique tags:', sortedTags);
 
-    // Filtrage des hadiths
-    useEffect(() => {
-        let results = [...douaasData];
+            setAllTags(sortedTags);
+            setTagCounts(counts);
+        } catch (err) {
+            console.error('Error loading tags:', err);
+        }
+    };
 
-        // Filtre par tag exact
-        if (selectedTag) {
-            const tagToFind = selectedTag.toLowerCase();
-            results = results.filter(douaa =>
-                douaa.tag.split(',')
-                    .map(t => t.trim().toLowerCase())
-                    .includes(tagToFind)
-            );
+    const handleTagClick = (tag: string) => {
+        setSelectedTag(tag);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const filterDouaasList = (douaas: Douaa[], searchText: string, tag: string | null): Douaa[] => {
+        let results = [...douaas];
+
+        if (tag) {
+            const tagToFind = tag.toLowerCase();
+            results = results.filter(douaa => {
+                const tags = getTagsArray(douaa.tag, douaa.sujet).map(t => t.toLowerCase());
+                return tags.includes(tagToFind);
+            });
         }
 
-        // Filtre par texte
-        if (searchTerm.trim()) {
-            const term = searchTerm.toLowerCase().trim();
-            results = results.filter(douaa =>
-                douaa.texte_arabe.toLowerCase().includes(term) ||
-                (douaa.texte_francais?.toLowerCase().includes(term)) ||
-                (douaa.explication?.toLowerCase().includes(term)) ||
-                douaa.sujet.toLowerCase().includes(term) ||
-                (douaa.phonetique?.toLowerCase().includes(term)) ||
-                (douaa.commentaire?.toLowerCase().includes(term))
-            );
+        if (searchText.trim()) {
+            const term = searchText.toLowerCase().trim();
+            results = results.filter(douaa => {
+                if (douaa.texte_arabe.toLowerCase().includes(term)) return true;
+                if (douaa.texte_francais?.toLowerCase().includes(term)) return true;
+                if (douaa.explication?.toLowerCase().includes(term)) return true;
+                if (douaa.sujet.toLowerCase().includes(term)) return true;
+                if (douaa.phonetique?.toLowerCase().includes(term)) return true;
+                if (douaa.commentaire?.toLowerCase().includes(term)) return true;
+
+                const tags = getTagsArray(douaa.tag, douaa.sujet);
+                if (tags.some(t => t.toLowerCase().includes(term))) return true;
+
+                return false;
+            });
         }
 
-        setFilteredDouaas(results);
+        return results;
+    };
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            if (douaasData.length > 0) {
+                const results = filterDouaasList(douaasData, searchTerm, selectedTag);
+                setFilteredDouaas(results);
+            }
+        }, 300);
+
+        return () => clearTimeout(handler);
     }, [searchTerm, selectedTag, douaasData]);
+
+    const handleResetFilters = () => {
+        setSearchTerm('');
+        setSelectedTag(null);
+    };
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-b from-amber-50 to-emerald-50 dark:from-gray-900 dark:to-emerald-950 flex items-center justify-center">
+                <div className="text-center">
+                    <Loader className="h-12 w-12 text-emerald-600 dark:text-emerald-400 animate-spin mx-auto mb-4" />
+                    <p className="text-xl text-emerald-800 dark:text-emerald-200 font-amiri">
+                        Chargement des invocations...
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen bg-gradient-to-b from-amber-50 to-emerald-50 dark:from-gray-900 dark:to-emerald-950 flex items-center justify-center">
+                <div className="text-center max-w-md mx-auto p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-xl">
+                    <div className="text-6xl mb-4">😔</div>
+                    <h3 className="text-xl font-bold text-red-600 dark:text-red-400 mb-2">
+                        Une erreur est survenue
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
+                    <button
+                        onClick={loadDouaas}
+                        className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors"
+                    >
+                        Réessayer
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-amber-50 to-emerald-50 dark:from-gray-900 dark:to-emerald-950">
-            {/* En-tête avec motif islamique */}
             <motion.header
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -312,58 +468,82 @@ export const Douaas: React.FC = () => {
                 <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-amber-50 dark:from-gray-900" />
 
                 <div className="relative container mx-auto px-4 text-center">
+                    <motion.div
+                        initial={{ scale: 0.9 }}
+                        animate={{ scale: 1 }}
+                        className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/10 backdrop-blur-sm mb-6"
+                    >
+                        <Heart className="h-10 w-10 text-white" />
+                    </motion.div>
                     <motion.h1
                         initial={{ scale: 0.9 }}
                         animate={{ scale: 1 }}
                         className="text-5xl md:text-6xl font-bold text-white mb-6 font-amiri"
                     >
-                        Les invocations
+                        Les Invocations
                     </motion.h1>
                     <p className="text-xl text-emerald-200 max-w-3xl mx-auto">
-                        Un recueil d'invocations
+                        "Invoquez-Moi, Je vous répondrai" - Sourate Ghafir, verset 60
                     </p>
                 </div>
             </motion.header>
 
             <main className="container mx-auto px-4 py-12 -mt-12 relative z-10">
-                {/* Navigation rapide */}
-                <motion.section
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                    className="mb-16"
-                >
-                    <h2 className="text-2xl font-bold text-emerald-900 dark:text-emerald-300 mb-6 font-amiri text-center">
-                        Collections principales
-                    </h2>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                        {topics.map((topic, i) => (
-                            <motion.div
-                                key={topic}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.1 + i * 0.05 }}
-                                whileHover={{ y: -5 }}
-                                className="cursor-pointer bg-white dark:bg-gray-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/50 text-center rounded-xl p-4 shadow-lg border border-emerald-100 dark:border-emerald-800 transition-all"
-                                onClick={() => handleTopicClick(topic)}
-                            >
-                                <div className="bg-emerald-100 dark:bg-emerald-900/50 w-12 h-12 mx-auto rounded-full flex items-center justify-center mb-2">
-                                    <BookOpen className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-                                </div>
-                                <span className="text-sm font-medium text-emerald-800 dark:text-emerald-300">
-                  {topic}
-                </span>
-                            </motion.div>
-                        ))}
-                    </div>
-                </motion.section>
+                {/* Section des tags disponibles */}
+                {allTags.length > 0 && (
+                    <motion.section
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                        className="mb-8"
+                    >
+                        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-amber-200 dark:border-emerald-800">
+                            <div className="flex items-center gap-2 mb-4">
+                                <Tags className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                                <h3 className="text-lg font-semibold text-emerald-900 dark:text-emerald-300">
+                                    Tags disponibles ({allTags.length})
+                                </h3>
+                            </div>
+                            <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2">
+                                {allTags.map(tag => {
+                                    const count = tagCounts.get(tag) || 0;
+                                    return (
+                                        <motion.button
+                                            key={tag}
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => handleTagClick(tag)}
+                                            className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300 ${
+                                                selectedTag === tag
+                                                    ? 'bg-emerald-600 text-white shadow-md'
+                                                    : 'bg-amber-100 dark:bg-emerald-800 text-amber-800 dark:text-emerald-200 hover:bg-amber-200 dark:hover:bg-emerald-700'
+                                            }`}
+                                        >
+                                            <Hash className="h-3 w-3" />
+                                            {tag}
+                                            <span className="text-xs opacity-75">({count})</span>
+                                        </motion.button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </motion.section>
+                )}
 
-                {/* Recherche et filtres */}
+                {allTags.length === 0 && douaasData.length > 0 && (
+                    <div className="mb-8 p-4 bg-yellow-50 dark:bg-yellow-900/30 rounded-lg text-center">
+                        <p className="text-yellow-800 dark:text-yellow-200">
+                            ⚠️ Aucun tag trouvé dans les invocations. Vérifiez que vos données contiennent des tags.
+                        </p>
+                    </div>
+                )}
+
+                {/* Barre de recherche et filtre */}
                 <motion.section
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.4 }}
-                    className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 mb-12 sticky top-4 z-20 border border-emerald-100 dark:border-emerald-900"
+                    className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 mb-12 sticky top-20 z-20 border border-emerald-100 dark:border-emerald-900"
                 >
                     <div className="flex flex-col md:flex-row gap-6">
                         <div className="flex-1 relative">
@@ -372,42 +552,54 @@ export const Douaas: React.FC = () => {
                             </div>
                             <input
                                 type="text"
-                                placeholder="Rechercher une invocation..."
+                                aria-label="Rechercher une invocation"
+                                placeholder="Rechercher par texte arabe, français, phonétique, tag..."
                                 className="w-full pl-12 pr-6 py-3 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-lg font-amiri"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
 
-                        <div className="relative md:w-64">
-                            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                                <Filter className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                            </div>
-                            <select
-                                className="w-full pl-4 pr-10 py-3 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white appearance-none font-medium"
-                                value={selectedTag || ''}
-                                onChange={(e) => setSelectedTag(e.target.value || null)}
-                            >
-                                <option value="">Tous les thèmes</option>
-                                {allTags.map(tag => (
-                                    <option key={tag} value={tag}>{tag}</option>
-                                ))}
-                            </select>
+                        <div className="md:w-80">
+                            <TagSelector
+                                allTags={allTags}
+                                selectedTag={selectedTag}
+                                tagCounts={tagCounts}
+                                onTagSelect={setSelectedTag}
+                            />
                         </div>
                     </div>
 
-                    {selectedTag && (
+                    {(selectedTag || searchTerm) && (
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className="mt-4 flex items-center justify-between bg-emerald-50 dark:bg-emerald-900/30 rounded-lg px-4 py-2"
+                            className="mt-4 flex items-center justify-between bg-gradient-to-r from-emerald-50 to-amber-50 dark:from-emerald-900/30 dark:to-amber-900/30 rounded-lg px-4 py-2"
                         >
-              <span className="font-medium text-emerald-800 dark:text-emerald-200">
-                Filtre : <span className="font-bold">{selectedTag}</span>
-              </span>
+                            <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-medium text-emerald-800 dark:text-emerald-200">
+                      Filtre actif :
+                    </span>
+                                {selectedTag && (
+                                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-600 text-white rounded-full text-sm">
+                          <Hash className="h-3 w-3" />
+                                        {selectedTag}
+                                        <span className="text-xs opacity-75 ml-1">
+                            ({tagCounts.get(selectedTag) || 0})
+                          </span>
+                        </span>
+                                )}
+                                {searchTerm && (
+                                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-600 text-white rounded-full text-sm">
+                          <Search className="h-3 w-3" />
+                          "{searchTerm}"
+                        </span>
+                                )}
+                            </div>
                             <button
-                                onClick={() => setSelectedTag(null)}
-                                className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-200 p-1"
+                                onClick={handleResetFilters}
+                                aria-label="Retirer les filtres"
+                                className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-200 p-1 transition-colors"
                             >
                                 <X className="h-5 w-5" />
                             </button>
@@ -417,7 +609,7 @@ export const Douaas: React.FC = () => {
 
                 {/* Résultats */}
                 <section className="pb-16">
-                    <AnimatePresence>
+                    <AnimatePresence mode="wait">
                         {filteredDouaas.length === 0 ? (
                             <motion.div
                                 key="no-results"
@@ -435,10 +627,7 @@ export const Douaas: React.FC = () => {
                                         Essayez de modifier vos critères de recherche
                                     </p>
                                     <button
-                                        onClick={() => {
-                                            setSearchTerm('');
-                                            setSelectedTag(null);
-                                        }}
+                                        onClick={handleResetFilters}
                                         className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors"
                                     >
                                         Réinitialiser
@@ -452,7 +641,7 @@ export const Douaas: React.FC = () => {
                                     animate={{ opacity: 1 }}
                                     className="text-sm font-medium text-emerald-700 dark:text-emerald-400 mb-6"
                                 >
-                                    {filteredDouaas.length} douaa{filteredDouaas.length > 1 ? 's' : ''} trouvé{filteredDouaas.length > 1 ? 's' : ''}
+                                    {filteredDouaas.length} invocation{filteredDouaas.length > 1 ? 's' : ''} trouvée{filteredDouaas.length > 1 ? 's' : ''}
                                 </motion.p>
 
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -461,12 +650,13 @@ export const Douaas: React.FC = () => {
                                             key={`${douaa.id}-${index}`}
                                             initial={{ opacity: 0, y: 20 }}
                                             animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: index * 0.05 }}
+                                            transition={{ delay: Math.min(index, 10) * 0.05 }}
                                             layout
                                         >
                                             <DouaaCard
                                                 douaa={douaa}
                                                 onClick={() => setSelectedDouaa(douaa)}
+                                                onTagClick={handleTagClick}
                                             />
                                         </motion.div>
                                     ))}
@@ -477,21 +667,24 @@ export const Douaas: React.FC = () => {
                 </section>
             </main>
 
-            {/* Pied de page décoratif */}
             <footer className="bg-emerald-900 dark:bg-emerald-950 text-white py-12">
                 <div className="container mx-auto px-4 text-center">
                     <p className="text-emerald-300 mb-4 font-amiri text-xl">
-                        "On n’obéit pas à une créature pour désobéir au Créateur"
+                        "On n'obéit pas à une créature pour désobéir au Créateur"
                     </p>
                     <p className="text-emerald-200">© 2023 Collection d'invocations</p>
                 </div>
             </footer>
 
-            {/* Modal */}
-            <DouaaModal
-                douaa={selectedDouaa}
-                onClose={() => setSelectedDouaa(null)}
-            />
+            <AnimatePresence>
+                {selectedDouaa && (
+                    <DouaaModal
+                        douaa={selectedDouaa}
+                        onClose={() => setSelectedDouaa(null)}
+                        onTagClick={handleTagClick}
+                    />
+                )}
+            </AnimatePresence>
         </div>
     );
 };
