@@ -4,6 +4,8 @@ import type {
   Dhikr,
   Douaa,
   Savant,
+  Multimedia,
+  MultimediaCategory,
   PaginatedResponse,
   PaginationParams,
 } from '../types';
@@ -157,6 +159,26 @@ class DataService {
 
   async getSavantNames(): Promise<string[]> {
     return apiClient.get<string[]>('/savants/names');
+  }
+
+  // ==========================================
+  // Multimedia (vidéos YouTube externes)
+  // ==========================================
+
+  async searchMultimedia(
+    searchTerm: string,
+    categorie?: string | null,
+    params?: PaginationParams,
+  ): Promise<{ data: Multimedia[]; total: number; page: number; pageSize: number }> {
+    const queryParams: Record<string, unknown> = { q: sanitizeInput(searchTerm) };
+    if (categorie) queryParams.categorie = sanitizeInput(categorie);
+    if (params) { queryParams.page = params.page; queryParams.pageSize = params.pageSize; }
+    return apiClient.getWithParams('/multimedia/search', queryParams);
+  }
+
+  async getMultimediaCategories(): Promise<MultimediaCategory[]> {
+    const res = await apiClient.get<{ data: MultimediaCategory[] }>('/multimedia/categories');
+    return res.data;
   }
 
   // ==========================================
