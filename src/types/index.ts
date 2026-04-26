@@ -40,6 +40,24 @@ export interface Savant extends BaseText {
   savant: string;             // Nom du savant
 }
 
+/** Vidéo YouTube (lien externe, pas de contenu Arabe/Français) */
+export interface Multimedia {
+  id: number;
+  youtube_id: string;
+  titre: string;
+  description: string | null;
+  categorie: string;
+  savant: string | null;
+  duree_secondes: number | null;
+  created_at: string;
+}
+
+/** Catégorie multimédia avec compteur */
+export interface MultimediaCategory {
+  categorie: string;
+  count: number;
+}
+
 // ==========================================
 // Types pour les horaires de prière
 // ==========================================

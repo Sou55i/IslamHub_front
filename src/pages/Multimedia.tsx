@@ -1,81 +1,95 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Video, Search, Filter, X, Star, ChevronRight, Clock, BookOpen } from 'lucide-react';
+import { Search, Filter, X, Loader2 } from 'lucide-react';
+import { dataService } from '../services/DataService';
+import { VideoCard } from '../components/VideoCard';
+import type { Multimedia as MultimediaType, MultimediaCategory } from '../types';
+
+const PAGE_SIZE = 12;
 
 export const Multimedia: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [videos, setVideos]               = useState<MultimediaType[]>([]);
+  const [categories, setCategories]       = useState<MultimediaCategory[]>([]);
+  const [searchTerm, setSearchTerm]       = useState('');
+  const [selectedCategory, setCategory]   = useState<string | null>(null);
+  const [hasSearched, setHasSearched]     = useState(false);
+  const [isLoading, setIsLoading]         = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [error, setError]                 = useState<string | null>(null);
+  const [totalCount, setTotalCount]       = useState(0);
+  const [currentPage, setCurrentPage]     = useState(0);
+  const [hasMore, setHasMore]             = useState(false);
 
-  const mediaItems = [
-    { 
-      id: 1,
-      title: 'Les Fondements de la Foi',
-      description: 'Explication approfondie des piliers de la croyance islamique',
-      duration: '12:45',
-      category: 'Aqida',
-      tags: 'Croyance,Tawhid,Theologie',
-      thumbnail: '/img/thumbnails/aqida.jpg'
-    },
-    { 
-      id: 2,
-      title: 'La Vie du Prophète (ﷺ)',
-      description: 'Série complète sur la biographie prophétique',
-      duration: '45:30',
-      category: 'Sira',
-      tags: 'Histoire,Prophète,Sunna',
-      thumbnail: '/img/thumbnails/sira.jpg'
-    },
-    { 
-      id: 3,
-      title: 'Tafsir Sourate Al-Baqara',
-      description: 'Exégèse des premiers versets de la sourate',
-      duration: '32:15',
-      category: 'Tafsir',
-      tags: 'Coran,Exegese,Recitation',
-      thumbnail: '/img/thumbnails/tafsir.jpg'
-    },
-    { 
-      id: 4,
-      title: 'Fiqh des Transactions',
-      description: 'Règles islamiques concernant le commerce',
-      duration: '28:20',
-      category: 'Fiqh',
-      tags: 'Commerce,Halal,Finance',
-      thumbnail: '/img/thumbnails/fiqh.jpg'
-    },
-    { 
-      id: 5,
-      title: 'Histoires des Compagnons',
-      description: 'Récits inspirants des premiers musulmans',
-      duration: '18:50',
-      category: 'Histoire',
-      tags: 'Sahaba,Inspiration,Biographie',
-      thumbnail: '/img/thumbnails/sahaba.jpg'
-    },
-    { 
-      id: 6,
-      title: 'Sciences du Hadith',
-      description: 'Introduction à la méthodologie des traditionalistes',
-      duration: '22:10',
-      category: 'Hadith',
-      tags: 'Muhaddithin,Authentification,Sunna',
-      thumbnail: '/img/thumbnails/hadith.jpg'
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+  // Charger les catégories au mount (léger, pas de vidéos)
+  useEffect(() => {
+    dataService.getMultimediaCategories()
+      .then(setCategories)
+      .catch(() => setCategories([]));
+  }, []);
+
+  const doSearch = useCallback(async (q: string, categorie: string | null, page: number, append: boolean) => {
+    if (append) setIsLoadingMore(true);
+    else        setIsLoading(true);
+    setError(null);
+
+    try {
+      const result = await dataService.searchMultimedia(q, categorie, { page, pageSize: PAGE_SIZE });
+      setVideos(prev => append ? [...prev, ...result.data] : result.data);
+      setTotalCount(result.total);
+      setCurrentPage(page);
+      setHasMore((page + 1) * PAGE_SIZE < result.total);
+      setHasSearched(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur de recherche');
+      if (!append) setVideos([]);
+    } finally {
+      setIsLoading(false);
+      setIsLoadingMore(false);
     }
-  ];
+  }, []);
 
-  const categories = [...new Set(mediaItems.map(item => item.category))];
-  const allTags = [...new Set(mediaItems.flatMap(item => item.tags.split(',')))];
+  // Recherche débouncée quand searchTerm/category changent (sauf au mount)
+  useEffect(() => {
+    const isInitial = !searchTerm && !selectedCategory && !hasSearched;
+    if (isInitial) return;
 
-  const filteredMedia = mediaItems.filter(item => {
-    const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         item.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory ? item.category === selectedCategory : true;
-    return matchesSearch && matchesCategory;
-  });
+    const t = setTimeout(() => {
+      doSearch(searchTerm, selectedCategory, 0, false);
+    }, 300);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm, selectedCategory]);
+
+  // Infinite scroll : observe le sentinel et charge la page suivante
+  useEffect(() => {
+    if (!hasMore || isLoading || isLoadingMore) return;
+    const el = loadMoreRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0]?.isIntersecting) {
+          doSearch(searchTerm, selectedCategory, currentPage + 1, true);
+        }
+      },
+      { rootMargin: '200px' },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasMore, isLoading, isLoadingMore, currentPage, searchTerm, selectedCategory, doSearch]);
+
+  const resetFilters = () => {
+    setSearchTerm('');
+    setCategory(null);
+    setHasSearched(false);
+    setVideos([]);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-emerald-50 dark:from-gray-900 dark:to-emerald-950">
-      {/* En-tête avec motif islamique */}
+      {/* En-tête */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -83,9 +97,9 @@ export const Multimedia: React.FC = () => {
       >
         <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]" />
         <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-amber-50 dark:from-gray-900" />
-        
+
         <div className="relative container mx-auto px-4 text-center">
-          <motion.h1 
+          <motion.h1
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
             className="text-5xl md:text-6xl font-bold text-white mb-6 font-amiri"
@@ -93,13 +107,13 @@ export const Multimedia: React.FC = () => {
             Média Islamique
           </motion.h1>
           <p className="text-xl text-emerald-200 max-w-3xl mx-auto">
-            Apprenez à travers notre collection de contenus multimédias
+            Apprenez à travers notre collection de vidéos
           </p>
         </div>
       </motion.header>
 
       <main className="container mx-auto px-4 py-12 -mt-12 relative z-10">
-        {/* Recherche et filtres */}
+        {/* Barre de recherche + filtre catégorie */}
         <motion.section
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -108,47 +122,48 @@ export const Multimedia: React.FC = () => {
         >
           <div className="flex flex-col md:flex-row gap-6">
             <div className="flex-1 relative">
-              <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                <Search className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-              </div>
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-600 dark:text-emerald-400" />
               <input
                 type="text"
-                placeholder="Rechercher des vidéos..."
-                className="w-full pl-12 pr-6 py-3 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-lg font-amiri"
+                placeholder="Rechercher une vidéo, un savant, un sujet..."
+                className="w-full pl-12 pr-6 py-3 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-lg"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
 
             <div className="relative md:w-64">
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                <Filter className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-              </div>
+              <Filter className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-600 dark:text-emerald-400 pointer-events-none" />
               <select
                 className="w-full pl-4 pr-10 py-3 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white appearance-none font-medium"
                 value={selectedCategory || ''}
-                onChange={(e) => setSelectedCategory(e.target.value || null)}
+                onChange={(e) => setCategory(e.target.value || null)}
               >
                 <option value="">Toutes les catégories</option>
-                {categories.map(category => (
-                  <option key={category} value={category}>{category}</option>
+                {categories.map(c => (
+                  <option key={c.categorie} value={c.categorie}>
+                    {c.categorie} ({c.count})
+                  </option>
                 ))}
               </select>
             </div>
           </div>
 
-          {selectedCategory && (
+          {(selectedCategory || searchTerm) && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="mt-4 flex items-center justify-between bg-emerald-50 dark:bg-emerald-900/30 rounded-lg px-4 py-2"
             >
-              <span className="font-medium text-emerald-800 dark:text-emerald-200">
-                Filtre : <span className="font-bold">{selectedCategory}</span>
+              <span className="font-medium text-emerald-800 dark:text-emerald-200 text-sm">
+                {hasSearched && !isLoading
+                  ? `${totalCount} vidéo${totalCount > 1 ? 's' : ''} trouvée${totalCount > 1 ? 's' : ''}`
+                  : 'Recherche en cours…'}
               </span>
-              <button 
-                onClick={() => setSelectedCategory(null)}
+              <button
+                onClick={resetFilters}
                 className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-200 p-1"
+                aria-label="Réinitialiser les filtres"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -158,8 +173,82 @@ export const Multimedia: React.FC = () => {
 
         {/* Résultats */}
         <section className="pb-16">
-          <AnimatePresence>
-            {filteredMedia.length === 0 ? (
+          <AnimatePresence mode="wait">
+            {/* État initial : pas de recherche */}
+            {!hasSearched && !isLoading && (
+              <motion.div
+                key="empty"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="text-center py-16 bg-white dark:bg-gray-800 rounded-2xl shadow-xl"
+              >
+                <motion.div
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ repeat: Infinity, duration: 2 }}
+                  className="text-7xl mb-6"
+                >
+                  🎥
+                </motion.div>
+                <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-3 font-amiri">
+                  Lance une recherche pour découvrir des vidéos
+                </h3>
+                <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-md mx-auto">
+                  Tape un mot-clé, le nom d'un savant, ou choisis une catégorie pour explorer notre sélection.
+                </p>
+                {categories.length > 0 && (
+                  <div className="flex flex-wrap justify-center gap-2 max-w-2xl mx-auto">
+                    {categories.slice(0, 8).map(c => (
+                      <button
+                        key={c.categorie}
+                        onClick={() => setCategory(c.categorie)}
+                        className="px-4 py-2 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200 hover:bg-emerald-200 dark:hover:bg-emerald-900/60 transition-colors text-sm font-medium"
+                      >
+                        {c.categorie} ({c.count})
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {/* Loading initial */}
+            {isLoading && (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+              >
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden animate-pulse">
+                    <div className="aspect-video bg-gray-200 dark:bg-gray-700" />
+                    <div className="p-5 space-y-3">
+                      <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
+                      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded" />
+                    </div>
+                  </div>
+                ))}
+              </motion.div>
+            )}
+
+            {/* Erreur */}
+            {error && !isLoading && (
+              <motion.div
+                key="error"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center py-12 bg-red-50 dark:bg-red-900/20 rounded-2xl shadow-xl"
+              >
+                <div className="text-5xl mb-4">⚠️</div>
+                <p className="text-red-700 dark:text-red-300 font-medium">{error}</p>
+              </motion.div>
+            )}
+
+            {/* Aucun résultat */}
+            {hasSearched && !isLoading && !error && videos.length === 0 && (
               <motion.div
                 key="no-results"
                 initial={{ opacity: 0 }}
@@ -167,114 +256,56 @@ export const Multimedia: React.FC = () => {
                 exit={{ opacity: 0 }}
                 className="text-center py-16 bg-white dark:bg-gray-800 rounded-2xl shadow-xl"
               >
-                <div className="max-w-md mx-auto">
-                  <div className="text-6xl mb-4">🎥</div>
-                  <h3 className="text-xl font-bold text-gray-700 dark:text-gray-300 mb-2">
-                    Aucun résultat trouvé
-                  </h3>
-                  <p className="text-gray-500 dark:text-gray-400 mb-6">
-                    Essayez de modifier vos critères de recherche
-                  </p>
-                  <button
-                    onClick={() => {
-                      setSearchTerm('');
-                      setSelectedCategory(null);
-                    }}
-                    className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors"
-                  >
-                    Réinitialiser
-                  </button>
-                </div>
-              </motion.div>
-            ) : (
-              <>
-                <motion.p 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-sm font-medium text-emerald-700 dark:text-emerald-400 mb-6"
+                <div className="text-6xl mb-4">🔍</div>
+                <h3 className="text-xl font-bold text-gray-700 dark:text-gray-300 mb-2">
+                  Aucun résultat trouvé
+                </h3>
+                <p className="text-gray-500 dark:text-gray-400 mb-6">
+                  Essayez d'autres mots-clés ou changez de catégorie.
+                </p>
+                <button
+                  onClick={resetFilters}
+                  className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors"
                 >
-                  {filteredMedia.length} vidéo{filteredMedia.length > 1 ? 's' : ''} trouvée{filteredMedia.length > 1 ? 's' : ''}
-                </motion.p>
+                  Réinitialiser
+                </button>
+              </motion.div>
+            )}
 
+            {/* Résultats */}
+            {hasSearched && !isLoading && !error && videos.length > 0 && (
+              <motion.div
+                key="results"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {filteredMedia.map((media, index) => (
-                    <motion.div
-                      key={media.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                      whileHover={{ scale: 1.02 }}
-                      className="relative bg-gradient-to-br from-amber-50 to-emerald-50 dark:from-emerald-900 dark:to-amber-900 rounded-2xl shadow-xl border border-amber-200 dark:border-emerald-800 overflow-hidden"
-                    >
-                      {/* Décoration orientale */}
-                      <div className="absolute top-0 right-0 w-24 h-24 opacity-20">
-                        <svg viewBox="0 0 100 100" className="text-amber-500 dark:text-emerald-400">
-                          <path 
-                            fill="currentColor" 
-                            d="M20,20 Q30,10 40,20 T60,20 T80,20 T100,20" 
-                            className="transform rotate-45"
-                          />
-                        </svg>
-                      </div>
-                      
-                      {/* Miniature vidéo */}
-                      <div className="aspect-video bg-gray-100 dark:bg-gray-700 relative overflow-hidden">
-                        <img 
-                          src={media.thumbnail} 
-                          alt={media.title}
-                          className="w-full h-full object-cover"
-                        />
-                        <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                          <div className="w-12 h-12 bg-emerald-600/80 rounded-full flex items-center justify-center">
-                            <Video className="w-6 h-6 text-white" />
-                          </div>
-                        </div>
-                        <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                          {media.duration}
-                        </div>
-                      </div>
-                      
-                      <div className="p-6">
-                        <div className="flex justify-between items-start mb-2">
-                          <h3 className="text-xl font-bold text-amber-800 dark:text-amber-200 font-amiri">
-                            {media.title}
-                          </h3>
-                          <span className="px-2 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-200 text-xs">
-                            {media.category}
-                          </span>
-                        </div>
-                        
-                        <p className="text-gray-700 dark:text-gray-300 mb-4">
-                          {media.description}
-                        </p>
-                        
-                        <div className="flex flex-wrap gap-2">
-                          {media.tags.split(',').map(tag => (
-                            <motion.span
-                              key={tag.trim()}
-                              whileHover={{ scale: 1.05 }}
-                              className="text-xs bg-amber-100 dark:bg-emerald-800 text-amber-800 dark:text-emerald-200 px-3 py-1 rounded-full flex items-center"
-                            >
-                              <ChevronRight className="h-3 w-3 mr-1" />
-                              {tag.trim()}
-                            </motion.span>
-                          ))}
-                        </div>
-                      </div>
-                    </motion.div>
+                  {videos.map((video, i) => (
+                    <VideoCard key={video.id} video={video} index={i} />
                   ))}
                 </div>
-              </>
+
+                {/* Sentinel infinite scroll */}
+                {hasMore && (
+                  <div ref={loadMoreRef} className="flex justify-center mt-12">
+                    {isLoadingMore ? (
+                      <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
+                    ) : (
+                      <div className="h-8" />
+                    )}
+                  </div>
+                )}
+              </motion.div>
             )}
           </AnimatePresence>
         </section>
       </main>
 
-      {/* Pied de page décoratif */}
       <footer className="bg-emerald-900 dark:bg-emerald-950 text-white py-12">
         <div className="container mx-auto px-4 text-center">
           <p className="text-emerald-300 mb-4 font-amiri text-xl">
-            "Dieu existe de toute éternité et rien d’autre que Lui n’est de toute éternité"
+            "Dieu existe de toute éternité et rien d'autre que Lui n'est de toute éternité"
           </p>
           <p className="text-emerald-200">© {new Date().getFullYear()} Média Islamique</p>
         </div>
@@ -282,3 +313,5 @@ export const Multimedia: React.FC = () => {
     </div>
   );
 };
+
+export default Multimedia;
