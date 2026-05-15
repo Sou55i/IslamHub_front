@@ -3,10 +3,13 @@ import react from '@vitejs/plugin-react';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: '/IslamHub_front/',
+  // './' works for both GitHub Pages (HashRouter) and Capacitor Android WebView.
+  // '/IslamHub_front/' would break all asset paths inside the Android WebView.
+  base: './',
   plugins: [react()],
   optimizeDeps: {
     exclude: ['lucide-react'],
+
   },
 
   // Optimisation du build

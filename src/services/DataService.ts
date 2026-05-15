@@ -1,141 +1,57 @@
-/**
- * DataService - Service unifié pour la gestion des données
- *
- * Supporte 3 modes de données:
- * 1. 'supabase' - Connexion directe à Supabase (recommandé)
- * 2. 'express'  - Via le backend Express (fallback si Supabase saturé)
- * 3. 'local'    - Données JSON locales (fallback ultime)
- *
- * Configuration via variable d'environnement VITE_DATA_SOURCE
- * ou automatiquement selon les credentials disponibles.
- */
-
 import type {
   Hadith,
   Coran,
   Dhikr,
   Douaa,
   Savant,
+  Multimedia,
+  MultimediaCategory,
   PaginatedResponse,
   PaginationParams,
-  BaseText
 } from '../types';
 
-import { supabase } from './supabase';
-import api from './api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
-// Import des données JSON locales (fallback ultime)
-import hadithsData from '../data/hadith.json';
-import coranData from '../data/coran.json';
-import dhikrData from '../data/dhikr.json';
-import douaaData from '../data/douaa.json';
-import savantData from '../data/savant.json';
-
-// ==========================================
-// Configuration du mode de données
-// ==========================================
-
-type DataSourceMode = 'supabase' | 'express' | 'local';
-
-function detectDataSource(): DataSourceMode {
-  const envMode = import.meta.env.VITE_DATA_SOURCE as DataSourceMode | undefined;
-
-  if (envMode && ['supabase', 'express', 'local'].includes(envMode)) {
-    return envMode;
-  }
-
-  // Auto-détection
-  if (import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY) {
-    return 'supabase';
-  }
-
-  if (import.meta.env.VITE_API_URL) {
-    return 'express';
-  }
-
-  return 'local';
+function sanitizeInput(value: string): string {
+  return value.trim().slice(0, 300).replace(/[<>"']/g, '');
 }
 
-let currentDataSource = detectDataSource();
-
-// ==========================================
-// Fonctions utilitaires
-// ==========================================
-
-function extractTags<T extends { tag?: string }>(items: T[]): string[] {
-  const tagsSet = new Set<string>();
-  items.forEach(item => {
-    if (item.tag) {
-      item.tag.split(',').forEach(t => tagsSet.add(t.trim()));
+class ApiClient {
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    const url = `${API_BASE_URL}${endpoint}`;
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      }
+      return response.json();
+    } catch (error) {
+      throw error;
     }
-  });
-  return Array.from(tagsSet).sort();
+  }
+
+  async get<T>(endpoint: string): Promise<T> {
+    return this.request<T>(endpoint, { method: 'GET' });
+  }
+
+  async getWithParams<T>(endpoint: string, params: Record<string, unknown>): Promise<T> {
+    const filteredParams = Object.fromEntries(
+      Object.entries(params).filter(([, value]) => value != null && value !== '')
+    );
+    const queryString = new URLSearchParams(filteredParams as Record<string, string>).toString();
+    return this.get<T>(`${endpoint}${queryString ? `?${queryString}` : ''}`);
+  }
 }
 
-function filterBySearch<T extends BaseText>(items: T[], searchTerm: string): T[] {
-  if (!searchTerm.trim()) return items;
-
-  const term = searchTerm.toLowerCase();
-  return items.filter(item =>
-    item.sujet?.toLowerCase().includes(term) ||
-    item.texte_arabe?.toLowerCase().includes(term) ||
-    item.texte_francais?.toLowerCase().includes(term) ||
-    item.explication?.toLowerCase().includes(term) ||
-    item.tag?.toLowerCase().includes(term)
-  );
-}
-
-function filterByTag<T extends BaseText>(items: T[], tag: string | null): T[] {
-  if (!tag) return items;
-  return items.filter(item =>
-    item.tag?.toLowerCase().includes(tag.toLowerCase())
-  );
-}
-
-function paginate<T>(items: T[], params: PaginationParams): PaginatedResponse<T> {
-  const { page, pageSize } = params;
-  const start = page * pageSize;
-  const end = start + pageSize;
-  const data = items.slice(start, end);
-
-  return {
-    data,
-    count: items.length,
-    page,
-    pageSize,
-    hasMore: end < items.length
-  };
-}
-
-function defaultPaginatedResponse<T>(data: T[]): PaginatedResponse<T> {
-  return {
-    data,
-    count: data.length,
-    page: 0,
-    pageSize: data.length,
-    hasMore: false
-  };
-}
-
-// ==========================================
-// DataService Class
-// ==========================================
+const apiClient = new ApiClient();
 
 class DataService {
-  private cache: {
-    hadiths: Hadith[] | null;
-    coran: Coran[] | null;
-    dhikrs: Dhikr[] | null;
-    douaas: Douaa[] | null;
-    savants: Savant[] | null;
-  } = {
-    hadiths: null,
-    coran: null,
-    dhikrs: null,
-    douaas: null,
-    savants: null
-  };
-
   // ==========================================
   // Configuration
   // ==========================================
@@ -921,17 +837,16 @@ class DataService {
   }
 
   // ==========================================
-  // Cache management
+  // Utilitaires
   // ==========================================
 
-  clearCache(): void {
-    this.cache = {
-      hadiths: null,
-      coran: null,
-      dhikrs: null,
-      douaas: null,
-      savants: null
-    };
+  async testApiConnection(): Promise<boolean> {
+    try {
+      await apiClient.get('/health');
+      return true;
+    } catch {
+      return false;
+    }
   }
 }
 

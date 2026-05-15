@@ -1,5 +1,5 @@
 -- Insert statements for savants table
--- Generated from src/data/savant.json
+-- Generated from src/data/parole.json
 
 INSERT INTO savants (sujet, savant, texte_arabe, texte_francais, phonetique, explication, type_id, tag) VALUES
 ('La non ressemblance de Allah', 'Abu Hanifah', 'يد الله فوق أيديهم، وليست كأيدي خلقه، ليست بجارحة، وهُو خالق الأيدي. ووجهُه ليس كوُجوه خلقه، وهُو خالق كُلِّ الوُجوه', ' اليد (al-yad) attribué à Dieu n''a aucune ressemblance avec les mains des créatures. Ce n''est pas un membre. Il est le Créateur des mains. الوجه (al-wajh) attribué à Dieu n''a aucune ressemblance avec les visages des créatures. Il est le Créateur de tous les visages.', NULL, 'Un autre argument qui montre que Abou Hanifah ne rejette pas toute interprétation, réside dans sa parole dans Al-Fiqh al-Absaṭ où il dit lorsqu''il parle de l''attribut de Dieu اليد (al-yad)', 1, 'Exemption, croyance, Attributs de Dieu');

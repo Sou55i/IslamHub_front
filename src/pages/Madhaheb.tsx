@@ -1,53 +1,276 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { GraduationCap, BookOpen, ChevronRight, Star, Users, Scale, Sun, Moon } from 'lucide-react';
 
 export const Madhaheb: React.FC = () => {
-  const madhaheb = [
-    { id: 1, name: 'Hanafi', path: '/ecoles/Hanafi' },
-    { id: 2, name: 'Maliki', path: '/ecoles/Malikite' },
-    { id: 3, name: 'Shafi\'i', path: '/ecoles/Shafii' },
-    { id: 4, name: 'Hanbali', path: '/ecoles/Hanbalite' },
-  ];
+    const madhaheb = [
+        {
+            id: 1,
+            name: 'Hanafi',
+            nameArabic: 'الحنفية',
+            path: '/ecoles/Hanafi',
+            founder: 'Imam Abou Hanifa',
+            description: 'L\'école de la raison et de l\'opinion, répandue en Turquie, dans les Balkans, en Asie centrale et dans le sous-continent indien.',
+            icon: Scale,
+            color: 'from-amber-500 to-orange-600'
+        },
+        {
+            id: 2,
+            name: 'Maliki',
+            nameArabic: 'المالكية',
+            path: '/ecoles/Malikite',
+            founder: 'Imam Malik ibn Anas',
+            description: 'L\'école de la pratique médinoise, prédominante en Afrique du Nord et en Afrique de l\'Ouest.',
+            icon: BookOpen,
+            color: 'from-emerald-500 to-teal-600'
+        },
+        {
+            id: 3,
+            name: 'Shafi\'i',
+            nameArabic: 'الشافعية',
+            path: '/ecoles/Shafii',
+            founder: 'Imam Al-Shafi\'i',
+            description: 'L\'école équilibrée entre texte et raison, suivie en Égypte, au Yémen, en Asie du Sud-Est et dans l\'est de l\'Afrique.',
+            icon: GraduationCap,
+            color: 'from-blue-500 to-indigo-600'
+        },
+        {
+            id: 4,
+            name: 'Hanbali',
+            nameArabic: 'الحنابلة',
+            path: '/ecoles/Hanbalite',
+            founder: 'Imam Ahmad ibn Hanbal',
+            description: 'L\'école du texte et de la tradition, influente en Arabie Saoudite, au Qatar et dans certaines régions de Syrie et d\'Irak.',
+            icon: Users,
+            color: 'from-purple-500 to-pink-600'
+        },
+    ];
 
-  return (
-    <div className="space-y-8">
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative py-16 bg-arabesque bg-cover bg-center"
-      >
-        <div className="absolute inset-0 bg-emerald-900/80 dark:bg-emerald-950/90 backdrop-blur-sm"></div>
-        <div className="relative text-center px-4">
-          <h1 className="text-4xl font-bold text-white mb-4 font-amiri">Madhaheb</h1>
-          <p className="text-lg text-emerald-50 max-w-2xl mx-auto">
-            Découvrez les quatre écoles de jurisprudence islamique
-          </p>
-        </div>
-      </motion.div>
+    const stats = [
+        { label: 'Écoles principales', value: '4', icon: Scale },
+        { label: "Siècles d'histoire", value: '12+', icon: BookOpen },
+        { label: 'Pays influencés', value: '50+', icon: Users },
+        { label: "Étudiants à travers l'histoire", value: 'Millions', icon: GraduationCap },
+    ];
 
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {madhaheb.map((madhab) => (
-            <motion.div
-              key={madhab.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: madhab.id * 0.1 }}
-              className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-emerald-100 dark:border-emerald-800 hover:border-emerald-300 dark:hover:border-emerald-700 transition-colors"
+    return (
+        <div className="min-h-screen bg-gradient-to-b from-amber-50 to-emerald-50 dark:from-gray-900 dark:to-emerald-950">
+            <motion.header
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="relative py-24 bg-gradient-to-r from-emerald-900 via-emerald-800 to-amber-900 dark:from-emerald-950 dark:via-emerald-900 dark:to-amber-950 overflow-hidden"
             >
-              <Link to={madhab.path} className="block text-center">
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white font-amiri">
-                  {madhab.name}
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                  En savoir plus
-                </p>
-              </Link>
-            </motion.div>
-          ))}
+                <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]" />
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-amber-50 dark:to-gray-900" />
+
+                <div className="relative container mx-auto px-4 text-center">
+                    <motion.div
+                        initial={{ scale: 0.9, rotate: -10 }}
+                        animate={{ scale: 1, rotate: 0 }}
+                        transition={{ type: "spring", stiffness: 200 }}
+                        className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-white/10 backdrop-blur-sm mb-8 shadow-2xl"
+                    >
+                        <GraduationCap className="h-12 w-12 text-white" />
+                    </motion.div>
+
+                    <motion.h1
+                        initial={{ y: 20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ delay: 0.1 }}
+                        className="text-5xl md:text-7xl font-bold text-white mb-6 font-amiri"
+                    >
+                        Les Madhāhib
+                    </motion.h1>
+
+                    <motion.p
+                        initial={{ y: 20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ delay: 0.2 }}
+                        className="text-xl text-emerald-200 max-w-3xl mx-auto mb-4"
+                    >
+                        Découvrez les quatre écoles juridiques sunnites
+                    </motion.p>
+
+                    <motion.p
+                        initial={{ y: 20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ delay: 0.3 }}
+                        className="text-emerald-300 max-w-2xl mx-auto font-amiri"
+                    >
+                        "La différence entre ma communauté est une miséricorde"
+                    </motion.p>
+                </div>
+            </motion.header>
+
+            <main className="container mx-auto px-4 py-12 -mt-12 relative z-10">
+                {/* Section des statistiques */}
+                <motion.section
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16"
+                >
+                    {stats.map((stat, index) => (
+                        <motion.div
+                            key={stat.label}
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.3 + index * 0.1 }}
+                            whileHover={{ y: -5 }}
+                            className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 text-center shadow-xl border border-amber-200 dark:border-emerald-800"
+                        >
+                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-emerald-500 mb-3">
+                                <stat.icon className="h-6 w-6 text-white" />
+                            </div>
+                            <div className="text-2xl font-bold text-amber-800 dark:text-amber-200 font-amiri">
+                                {stat.value}
+                            </div>
+                            <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                {stat.label}
+                            </div>
+                        </motion.div>
+                    ))}
+                </motion.section>
+
+                {/* Section d'introduction */}
+                <motion.section
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.4 }}
+                    className="mb-16 text-center"
+                >
+                    <h2 className="text-3xl font-bold text-emerald-900 dark:text-emerald-300 mb-6 font-amiri">
+                        Les Quatre Écoles Juridiques
+                    </h2>
+                    <div className="max-w-3xl mx-auto">
+                        <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                            Les madhāhib (écoles de jurisprudence) représentent les différentes méthodologies
+                            d'interprétation des sources islamiques. Chaque école offre une compréhension
+                            riche et nuancée de la Charia, tout en maintenant l'unité fondamentale de l'Islam.
+                        </p>
+                        <div className="h-1 w-24 mx-auto bg-gradient-to-r from-amber-400 to-emerald-500 rounded-full mt-6"></div>
+                    </div>
+                </motion.section>
+
+                {/* Cartes des madhahib */}
+                <section className="pb-16">
+                    <div className="grid md:grid-cols-2 gap-8">
+                        {madhaheb.map((madhab, index) => (
+                            <motion.div
+                                key={madhab.id}
+                                initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.5 + index * 0.1, type: "spring", stiffness: 100 }}
+                                whileHover={{ scale: 1.02 }}
+                                className="group"
+                            >
+                                <Link to={madhab.path} className="block h-full">
+                                    <div className="relative h-full bg-gradient-to-br from-white to-amber-50 dark:from-gray-800 dark:to-emerald-900/50 rounded-2xl shadow-xl overflow-hidden border border-amber-200 dark:border-emerald-800 transition-all duration-300 hover:shadow-2xl">
+                                        {/* Décoration arrière-plan */}
+                                        <div className="absolute top-0 right-0 w-40 h-40 opacity-5 group-hover:opacity-10 transition-opacity">
+                                            <svg viewBox="0 0 200 200" className="text-amber-500">
+                                                <path fill="currentColor" d="M100,20 Q120,40 140,20 T180,20 T200,20" />
+                                            </svg>
+                                        </div>
+
+                                        {/* En-tête avec dégradé */}
+                                        <div className={`relative bg-gradient-to-r ${madhab.color} p-6 text-white`}>
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <h3 className="text-2xl font-bold font-amiri mb-1">
+                                                        {madhab.name}
+                                                    </h3>
+                                                    <p className="text-lg font-arabic opacity-90">
+                                                        {madhab.nameArabic}
+                                                    </p>
+                                                </div>
+                                                <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                                                    <madhab.icon className="h-7 w-7" />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Contenu */}
+                                        <div className="p-6">
+                                            <div className="mb-4">
+                                                <p className="text-sm font-semibold text-amber-700 dark:text-amber-300 mb-1">
+                                                    Fondateur
+                                                </p>
+                                                <p className="text-gray-800 dark:text-gray-200 font-amiri">
+                                                    {madhab.founder}
+                                                </p>
+                                            </div>
+
+                                            <div className="mb-6">
+                                                <p className="text-sm font-semibold text-amber-700 dark:text-amber-300 mb-1">
+                                                    Présentation
+                                                </p>
+                                                <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                                                    {madhab.description}
+                                                </p>
+                                            </div>
+
+                                            <div className="flex items-center justify-between pt-4 border-t border-amber-200 dark:border-emerald-800">
+                        <span className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">
+                          Découvrir l'école {madhab.name}
+                        </span>
+                                                <motion.div
+                                                    whileHover={{ x: 5 }}
+                                                    className="w-8 h-8 rounded-full bg-amber-100 dark:bg-emerald-800 flex items-center justify-center"
+                                                >
+                                                    <ChevronRight className="h-4 w-4 text-amber-600 dark:text-emerald-400" />
+                                                </motion.div>
+                                            </div>
+                                        </div>
+
+                                        {/* Badge */}
+                                        <div className="absolute top-4 right-4">
+                                            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-full px-3 py-1 shadow-lg">
+                                                <div className="flex items-center gap-1">
+                                                    <Star className="h-3 w-3 text-amber-500" />
+                                                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                            École {madhab.name}
+                          </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Link>
+                            </motion.div>
+                        ))}
+                    </div>
+                </section>
+
+                {/* Section de citation */}
+                <motion.section
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.8 }}
+                    className="mt-16 bg-gradient-to-r from-amber-100 to-emerald-100 dark:from-emerald-900/30 dark:to-amber-900/30 rounded-2xl p-8 text-center shadow-lg"
+                >
+                    <div className="max-w-2xl mx-auto">
+                        <div className="text-5xl mb-4 text-amber-600 dark:text-amber-400">"</div>
+                        <p className="text-xl text-gray-800 dark:text-gray-200 font-amiri leading-relaxed mb-4">
+                            a developper
+                        </p>
+                        <p className="text-sm text-emerald-700 dark:text-emerald-400">
+                            - Propos rapporté par Abou Dawoud
+                        </p>
+                    </div>
+                </motion.section>
+            </main>
+
+            <footer className="bg-emerald-900 dark:bg-emerald-950 text-white py-12 mt-16">
+                <div className="container mx-auto px-4 text-center">
+                    <p className="text-emerald-300 mb-4 font-amiri text-xl">
+                        "a developper"
+                    </p>
+                    <p className="text-emerald-200 text-sm">
+                        Sourate Al-Imran, verset 159
+                    </p>
+                </div>
+            </footer>
         </div>
-      </div>
-    </div>
-  );
+    );
 };

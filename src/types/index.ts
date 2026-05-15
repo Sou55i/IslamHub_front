@@ -8,9 +8,8 @@ export interface BaseText {
   sujet: string;
   texte_arabe: string;
   texte_francais: string | null;
-  phonetique: string | null;
+  phonétique: string | null;
   explication: string | null;
-  type_id: number;
   tag: string;
 }
 
@@ -39,6 +38,24 @@ export interface Douaa extends BaseText {
 /** Citation de savant */
 export interface Savant extends BaseText {
   savant: string;             // Nom du savant
+}
+
+/** Vidéo YouTube (lien externe, pas de contenu Arabe/Français) */
+export interface Multimedia {
+  id: number;
+  youtube_id: string;
+  titre: string;
+  description: string | null;
+  categorie: string;
+  savant: string | null;
+  duree_secondes: number | null;
+  created_at: string;
+}
+
+/** Catégorie multimédia avec compteur */
+export interface MultimediaCategory {
+  categorie: string;
+  count: number;
 }
 
 // ==========================================

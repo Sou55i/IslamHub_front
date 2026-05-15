@@ -21,7 +21,9 @@ export const DhikrProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setError(null);
     try {
       const response = await dataService.getDhikrs();
-      setDhikrs(response.data);
+      // Back may return raw array or { data: [...] }; normalize both.
+      const list = Array.isArray(response) ? response : response?.data ?? [];
+      setDhikrs(list);
     } catch (err) {
       console.error('Error fetching dhikrs:', err);
       setError('Erreur lors du chargement des dhikrs.');

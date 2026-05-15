@@ -1,0 +1,7 @@
+-- Script de seeding pour la table douaa
+-- Généré automatiquement à partir du fichier JSON
+BEGIN;
+
+INSERT INTO "douaa" (sujet, texte_arabe, texte_francais, phonétique, explication, commentaire, tag) VALUES ('Invocation à dire lorsque le vent souffle ', 'اللَّهُمَّ إِنِّي أسْألُكَ خَيْرَهَا وخَيْرَ مَا فِيْهَا وَخَيْرَ مَا أُرْسِلَتْ بِهِ وأعُوذُ بِكَ مِنْ شَرِّهَا وَشَرِّ مَا فِيْهَا وَشَرِّ مَا أُرْسِلَتْ بِهِِ', 'Ô mon Dieu, je Te demande son bien, le bien qu’il contient et le bien avec lequel il a été envoyé, et je cherche refuge auprès de Toi contre son mal, le mal qu’il contient et le mal avec lequel il a été envoyé.', '', '', '', vent);
+
+COMMIT;
