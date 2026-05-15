@@ -9,10 +9,8 @@ lerna-debug.log*
 .env.development
 .env.production
 .env.example
-./supabase/data*
-./supabase/*
 node_modules
-
+dist/
 # Supabase scripts
 supabase/import-data.mjs
 supabase/*.mjs
