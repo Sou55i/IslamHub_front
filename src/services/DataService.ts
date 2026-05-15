@@ -1,3 +1,12 @@
+/**
+ * DataService - Service unifié pour la gestion des données
+ *
+ * Supporte 3 modes de données:
+ * 1. 'supabase' - Connexion directe à Supabase (recommandé)
+ * 2. 'express'  - Via le backend Express (fallback si Supabase saturé)
+ * 3. 'local'    - Données JSON locales (fallback ultime)
+ */
+
 import type {
   Hadith,
   Coran,
@@ -8,50 +17,123 @@ import type {
   MultimediaCategory,
   PaginatedResponse,
   PaginationParams,
+  BaseText
 } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+import { supabase } from './supabase';
+import api from './api';
 
-function sanitizeInput(value: string): string {
-  return value.trim().slice(0, 300).replace(/[<>"']/g, '');
+// Import des données JSON locales (fallback ultime)
+import hadithsData from '../data/hadith.json';
+import coranData from '../data/coran.json';
+import dhikrData from '../data/dhikr.json';
+import douaaData from '../data/douaa.json';
+import paroleData from '../data/parole.json';
+
+// ==========================================
+// Configuration du mode de données
+// ==========================================
+
+type DataSourceMode = 'supabase' | 'express' | 'local';
+
+function detectDataSource(): DataSourceMode {
+  const envMode = import.meta.env.VITE_DATA_SOURCE as DataSourceMode | undefined;
+
+  if (envMode && ['supabase', 'express', 'local'].includes(envMode)) {
+    return envMode;
+  }
+
+  if (import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY) {
+    return 'supabase';
+  }
+
+  if (import.meta.env.VITE_API_URL) {
+    return 'express';
+  }
+
+  return 'local';
 }
 
-class ApiClient {
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const url = `${API_BASE_URL}${endpoint}`;
-    try {
-      const response = await fetch(url, {
-        ...options,
-        headers: {
-          'Content-Type': 'application/json',
-          ...options.headers,
-        },
-      });
-      if (!response.ok) {
-        throw new Error(`API Error: ${response.status} ${response.statusText}`);
-      }
-      return response.json();
-    } catch (error) {
-      throw error;
+let currentDataSource = detectDataSource();
+
+// ==========================================
+// Fonctions utilitaires
+// ==========================================
+
+function extractTags<T extends { tag?: string }>(items: T[]): string[] {
+  const tagsSet = new Set<string>();
+  items.forEach(item => {
+    if (item.tag) {
+      item.tag.split(',').forEach(t => tagsSet.add(t.trim()));
     }
-  }
-
-  async get<T>(endpoint: string): Promise<T> {
-    return this.request<T>(endpoint, { method: 'GET' });
-  }
-
-  async getWithParams<T>(endpoint: string, params: Record<string, unknown>): Promise<T> {
-    const filteredParams = Object.fromEntries(
-      Object.entries(params).filter(([, value]) => value != null && value !== '')
-    );
-    const queryString = new URLSearchParams(filteredParams as Record<string, string>).toString();
-    return this.get<T>(`${endpoint}${queryString ? `?${queryString}` : ''}`);
-  }
+  });
+  return Array.from(tagsSet).sort();
 }
 
-const apiClient = new ApiClient();
+function filterBySearch<T extends BaseText>(items: T[], searchTerm: string): T[] {
+  if (!searchTerm.trim()) return items;
+
+  const term = searchTerm.toLowerCase();
+  return items.filter(item =>
+    item.sujet?.toLowerCase().includes(term) ||
+    item.texte_arabe?.toLowerCase().includes(term) ||
+    item.texte_francais?.toLowerCase().includes(term) ||
+    item.explication?.toLowerCase().includes(term) ||
+    item.tag?.toLowerCase().includes(term)
+  );
+}
+
+function filterByTag<T extends BaseText>(items: T[], tag: string | null): T[] {
+  if (!tag) return items;
+  return items.filter(item =>
+    item.tag?.toLowerCase().includes(tag.toLowerCase())
+  );
+}
+
+function paginate<T>(items: T[], params: PaginationParams): PaginatedResponse<T> {
+  const { page, pageSize } = params;
+  const start = page * pageSize;
+  const end = start + pageSize;
+  const data = items.slice(start, end);
+
+  return {
+    data,
+    count: items.length,
+    page,
+    pageSize,
+    hasMore: end < items.length
+  };
+}
+
+function defaultPaginatedResponse<T>(data: T[]): PaginatedResponse<T> {
+  return {
+    data,
+    count: data.length,
+    page: 0,
+    pageSize: data.length,
+    hasMore: false
+  };
+}
+
+// ==========================================
+// DataService Class
+// ==========================================
 
 class DataService {
+  private cache: {
+    hadiths: Hadith[] | null;
+    coran: Coran[] | null;
+    dhikrs: Dhikr[] | null;
+    douaas: Douaa[] | null;
+    savants: Savant[] | null;
+  } = {
+    hadiths: null,
+    coran: null,
+    dhikrs: null,
+    douaas: null,
+    savants: null
+  };
+
   // ==========================================
   // Configuration
   // ==========================================
@@ -78,6 +160,16 @@ class DataService {
     return currentDataSource === 'local';
   }
 
+  clearCache(): void {
+    this.cache = {
+      hadiths: null,
+      coran: null,
+      dhikrs: null,
+      douaas: null,
+      savants: null
+    };
+  }
+
   // ==========================================
   // Hadiths
   // ==========================================
@@ -85,7 +177,6 @@ class DataService {
   async getHadiths(params?: PaginationParams): Promise<PaginatedResponse<Hadith>> {
     const { page = 0, pageSize = 20 } = params || {};
 
-    // Mode Supabase
     if (currentDataSource === 'supabase') {
       try {
         const from = page * pageSize;
@@ -112,12 +203,9 @@ class DataService {
       }
     }
 
-    // Mode Express
     if (currentDataSource === 'express') {
       try {
-        const response = await api.get('/hadith', {
-          params: { page, pageSize }
-        });
+        const response = await api.get('/hadith', { params: { page, pageSize } });
         return response.data as PaginatedResponse<Hadith>;
       } catch (err) {
         console.error('Express error, falling back to local:', err);
@@ -125,7 +213,6 @@ class DataService {
       }
     }
 
-    // Mode Local
     return this.getHadithsLocal(params);
   }
 
@@ -175,18 +262,6 @@ class DataService {
       }
     }
 
-    if (currentDataSource === 'express' && searchTerm.trim()) {
-      try {
-        const response = await api.get('/hadith/search', {
-          params: { q: searchTerm, tag, page, pageSize }
-        });
-        return response.data as PaginatedResponse<Hadith>;
-      } catch (err) {
-        console.error('Express search error:', err);
-      }
-    }
-
-    // Fallback local
     const all = await this.getHadiths();
     let filtered = filterBySearch(all.data, searchTerm);
     filtered = filterByTag(filtered, tag ?? null);
@@ -200,20 +275,9 @@ class DataService {
   async getHadithTags(): Promise<string[]> {
     if (currentDataSource === 'supabase') {
       try {
-        const { data, error } = await supabase
-          .from('hadith')
-          .select('tag');
+        const { data, error } = await supabase.from('hadith').select('tag');
         if (error) throw error;
         return extractTags(data as { tag?: string }[]);
-      } catch (err) {
-        console.error('Error fetching hadith tags:', err);
-      }
-    }
-
-    if (currentDataSource === 'express') {
-      try {
-        const response = await api.get('/hadith/tags');
-        return response.data as string[];
       } catch (err) {
         console.error('Error fetching hadith tags:', err);
       }
@@ -260,9 +324,7 @@ class DataService {
 
     if (currentDataSource === 'express') {
       try {
-        const response = await api.get('/coran', {
-          params: { page, pageSize }
-        });
+        const response = await api.get('/coran', { params: { page, pageSize } });
         return response.data as PaginatedResponse<Coran>;
       } catch (err) {
         console.error('Express error:', err);
@@ -319,17 +381,6 @@ class DataService {
       }
     }
 
-    if (currentDataSource === 'express' && searchTerm.trim()) {
-      try {
-        const response = await api.get('/coran/search', {
-          params: { q: searchTerm, tag, page, pageSize }
-        });
-        return response.data as PaginatedResponse<Coran>;
-      } catch (err) {
-        console.error('Express search error:', err);
-      }
-    }
-
     const all = await this.getCoran();
     let filtered = filterBySearch(all.data, searchTerm);
     filtered = filterByTag(filtered, tag ?? null);
@@ -346,15 +397,6 @@ class DataService {
         const { data, error } = await supabase.from('coran').select('tag');
         if (error) throw error;
         return extractTags(data as { tag?: string }[]);
-      } catch (err) {
-        console.error('Error fetching coran tags:', err);
-      }
-    }
-
-    if (currentDataSource === 'express') {
-      try {
-        const response = await api.get('/coran/tags');
-        return response.data as string[];
       } catch (err) {
         console.error('Error fetching coran tags:', err);
       }
@@ -401,9 +443,7 @@ class DataService {
 
     if (currentDataSource === 'express') {
       try {
-        const response = await api.get('/dhikr', {
-          params: { page, pageSize }
-        });
+        const response = await api.get('/dhikr', { params: { page, pageSize } });
         return response.data as PaginatedResponse<Dhikr>;
       } catch (err) {
         console.error('Express error:', err);
@@ -460,17 +500,6 @@ class DataService {
       }
     }
 
-    if (currentDataSource === 'express' && searchTerm.trim()) {
-      try {
-        const response = await api.get('/dhikr/search', {
-          params: { q: searchTerm, tag, page, pageSize }
-        });
-        return response.data as PaginatedResponse<Dhikr>;
-      } catch (err) {
-        console.error('Express search error:', err);
-      }
-    }
-
     const all = await this.getDhikrs();
     let filtered = filterBySearch(all.data, searchTerm);
     filtered = filterByTag(filtered, tag ?? null);
@@ -487,15 +516,6 @@ class DataService {
         const { data, error } = await supabase.from('dhikr').select('tag');
         if (error) throw error;
         return extractTags(data as { tag?: string }[]);
-      } catch (err) {
-        console.error('Error fetching dhikr tags:', err);
-      }
-    }
-
-    if (currentDataSource === 'express') {
-      try {
-        const response = await api.get('/dhikr/tags');
-        return response.data as string[];
       } catch (err) {
         console.error('Error fetching dhikr tags:', err);
       }
@@ -542,9 +562,7 @@ class DataService {
 
     if (currentDataSource === 'express') {
       try {
-        const response = await api.get('/douaa', {
-          params: { page, pageSize }
-        });
+        const response = await api.get('/douaa', { params: { page, pageSize } });
         return response.data as PaginatedResponse<Douaa>;
       } catch (err) {
         console.error('Express error:', err);
@@ -601,17 +619,6 @@ class DataService {
       }
     }
 
-    if (currentDataSource === 'express' && searchTerm.trim()) {
-      try {
-        const response = await api.get('/douaa/search', {
-          params: { q: searchTerm, tag, page, pageSize }
-        });
-        return response.data as PaginatedResponse<Douaa>;
-      } catch (err) {
-        console.error('Express search error:', err);
-      }
-    }
-
     const all = await this.getDouaas();
     let filtered = filterBySearch(all.data, searchTerm);
     filtered = filterByTag(filtered, tag ?? null);
@@ -628,15 +635,6 @@ class DataService {
         const { data, error } = await supabase.from('douaa').select('tag');
         if (error) throw error;
         return extractTags(data as { tag?: string }[]);
-      } catch (err) {
-        console.error('Error fetching douaa tags:', err);
-      }
-    }
-
-    if (currentDataSource === 'express') {
-      try {
-        const response = await api.get('/douaa/tags');
-        return response.data as string[];
       } catch (err) {
         console.error('Error fetching douaa tags:', err);
       }
@@ -683,9 +681,7 @@ class DataService {
 
     if (currentDataSource === 'express') {
       try {
-        const response = await api.get('/parole', {
-          params: { page, pageSize }
-        });
+        const response = await api.get('/parole', { params: { page, pageSize } });
         return response.data as PaginatedResponse<Savant>;
       } catch (err) {
         console.error('Express error:', err);
@@ -698,7 +694,7 @@ class DataService {
 
   private getSavantsLocal(params?: PaginationParams): PaginatedResponse<Savant> {
     if (!this.cache.savants) {
-      this.cache.savants = savantData as Savant[];
+      this.cache.savants = paroleData as Savant[];
     }
     if (params) {
       return paginate(this.cache.savants, params);
@@ -742,33 +738,9 @@ class DataService {
       }
     }
 
-    if (currentDataSource === 'express' && searchTerm.trim()) {
-      try {
-        const response = await api.get('/parole/search', {
-          params: { q: searchTerm, tag, page, pageSize }
-        });
-        return response.data as PaginatedResponse<Savant>;
-      } catch (err) {
-        console.error('Express search error:', err);
-      }
-    }
-
     const all = await this.getSavants();
     let filtered = filterBySearch(all.data, searchTerm);
     filtered = filterByTag(filtered, tag ?? null);
-
-    if (searchTerm.trim()) {
-      const term = searchTerm.toLowerCase();
-      const byName = all.data.filter(s =>
-        s.savant?.toLowerCase().includes(term)
-      );
-      const ids = new Set(filtered.map(f => f.id));
-      byName.forEach(s => {
-        if (!ids.has(s.id)) {
-          filtered.push(s);
-        }
-      });
-    }
 
     if (params) {
       return paginate(filtered, params);
@@ -787,17 +759,8 @@ class DataService {
       }
     }
 
-    if (currentDataSource === 'express') {
-      try {
-        const response = await api.get('/parole/tags');
-        return response.data as string[];
-      } catch (err) {
-        console.error('Error fetching savant tags:', err);
-      }
-    }
-
     if (!this.cache.savants) {
-      this.cache.savants = savantData as Savant[];
+      this.cache.savants = paroleData as Savant[];
     }
     return extractTags(this.cache.savants);
   }
@@ -817,17 +780,8 @@ class DataService {
       }
     }
 
-    if (currentDataSource === 'express') {
-      try {
-        const response = await api.get('/parole/savants');
-        return response.data as string[];
-      } catch (err) {
-        console.error('Error fetching savant names:', err);
-      }
-    }
-
     if (!this.cache.savants) {
-      this.cache.savants = savantData as Savant[];
+      this.cache.savants = paroleData as Savant[];
     }
     const names = new Set<string>();
     this.cache.savants.forEach(s => {
@@ -837,16 +791,140 @@ class DataService {
   }
 
   // ==========================================
-  // Utilitaires
+  // Multimedia
   // ==========================================
 
-  async testApiConnection(): Promise<boolean> {
-    try {
-      await apiClient.get('/health');
-      return true;
-    } catch {
-      return false;
+  async getMultimediaCategories(): Promise<MultimediaCategory[]> {
+    if (currentDataSource === 'supabase') {
+      try {
+        const { data, error } = await supabase
+          .from('multimedia')
+          .select('categorie');
+
+        if (error) throw error;
+
+        const counts: Record<string, number> = {};
+        (data as { categorie: string }[]).forEach(item => {
+          counts[item.categorie] = (counts[item.categorie] || 0) + 1;
+        });
+
+        return Object.entries(counts)
+          .map(([categorie, count]) => ({ categorie, count }))
+          .sort((a, b) => b.count - a.count);
+      } catch (err) {
+        console.error('Error fetching multimedia categories:', err);
+        return [];
+      }
     }
+
+    if (currentDataSource === 'express') {
+      try {
+        const response = await api.get('/multimedia/categories');
+        return response.data as MultimediaCategory[];
+      } catch (err) {
+        console.error('Error fetching multimedia categories:', err);
+        return [];
+      }
+    }
+
+    return [];
+  }
+
+  async searchMultimedia(
+    searchTerm: string,
+    categorie: string | null,
+    params?: PaginationParams
+  ): Promise<{ data: Multimedia[]; total: number }> {
+    const { page = 0, pageSize = 12 } = params || {};
+
+    if (currentDataSource === 'supabase') {
+      try {
+        const from = page * pageSize;
+        const to = from + pageSize - 1;
+
+        let query = supabase
+          .from('multimedia')
+          .select('*', { count: 'exact' });
+
+        if (searchTerm.trim()) {
+          query = query.or(`titre.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,savant.ilike.%${searchTerm}%`);
+        }
+
+        if (categorie) {
+          query = query.eq('categorie', categorie);
+        }
+
+        const { data, count, error } = await query
+          .range(from, to)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        return {
+          data: data as Multimedia[],
+          total: count || 0
+        };
+      } catch (err) {
+        console.error('Supabase multimedia search error:', err);
+        return { data: [], total: 0 };
+      }
+    }
+
+    if (currentDataSource === 'express') {
+      try {
+        const response = await api.get('/multimedia/search', {
+          params: { q: searchTerm, categorie, page, pageSize }
+        });
+        return response.data as { data: Multimedia[]; total: number };
+      } catch (err) {
+        console.error('Express multimedia search error:', err);
+        return { data: [], total: 0 };
+      }
+    }
+
+    return { data: [], total: 0 };
+  }
+
+  async getMultimedia(params?: PaginationParams): Promise<PaginatedResponse<Multimedia>> {
+    const { page = 0, pageSize = 12 } = params || {};
+
+    if (currentDataSource === 'supabase') {
+      try {
+        const from = page * pageSize;
+        const to = from + pageSize - 1;
+
+        const { data, count, error } = await supabase
+          .from('multimedia')
+          .select('*', { count: 'exact' })
+          .range(from, to)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        return {
+          data: data as Multimedia[],
+          count: count || 0,
+          page,
+          pageSize,
+          hasMore: (from + pageSize) < (count || 0)
+        };
+      } catch (err) {
+        console.error('Supabase error:', err);
+        return { data: [], count: 0, page: 0, pageSize, hasMore: false };
+      }
+    }
+
+    if (currentDataSource === 'express') {
+      try {
+        const response = await api.get('/multimedia', { params: { page, pageSize } });
+        return response.data as PaginatedResponse<Multimedia>;
+      } catch (err) {
+        console.error('Express error:', err);
+        return { data: [], count: 0, page: 0, pageSize, hasMore: false };
+      }
+    }
+
+    return { data: [], count: 0, page: 0, pageSize, hasMore: false };
   }
 }
 
