@@ -1,11 +1,13 @@
 /**
  * DataService - Service unifié pour la gestion des données
  *
- * Ce service abstrait l'accès aux données pour faciliter la migration
- * de JSON local vers Supabase.
+ * Supporte 3 modes de données:
+ * 1. 'supabase' - Connexion directe à Supabase (recommandé)
+ * 2. 'express'  - Via le backend Express (fallback si Supabase saturé)
+ * 3. 'local'    - Données JSON locales (fallback ultime)
  *
- * Si les credentials Supabase sont configurés, utilise Supabase.
- * Sinon, utilise les données JSON locales en fallback.
+ * Configuration via variable d'environnement VITE_DATA_SOURCE
+ * ou automatiquement selon les credentials disponibles.
  */
 
 import type {
@@ -20,25 +22,47 @@ import type {
 } from '../types';
 
 import { supabase } from './supabase';
+import api from './api';
 
-// Import des données JSON locales (fallback)
+// Import des données JSON locales (fallback ultime)
 import hadithsData from '../data/hadith.json';
 import coranData from '../data/coran.json';
 import dhikrData from '../data/dhikr.json';
 import douaaData from '../data/douaa.json';
 import savantData from '../data/savant.json';
 
-// Détecter si Supabase est configuré
-const USE_SUPABASE = Boolean(
-  import.meta.env.VITE_SUPABASE_URL &&
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+// ==========================================
+// Configuration du mode de données
+// ==========================================
+
+type DataSourceMode = 'supabase' | 'express' | 'local';
+
+function detectDataSource(): DataSourceMode {
+  const envMode = import.meta.env.VITE_DATA_SOURCE as DataSourceMode | undefined;
+
+  if (envMode && ['supabase', 'express', 'local'].includes(envMode)) {
+    return envMode;
+  }
+
+  // Auto-détection
+  if (import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY) {
+    return 'supabase';
+  }
+
+  if (import.meta.env.VITE_API_URL) {
+    return 'express';
+  }
+
+  return 'local';
+}
+
+let currentDataSource = detectDataSource();
 
 // ==========================================
 // Fonctions utilitaires
 // ==========================================
 
-function extractTags<T extends BaseText>(items: T[]): string[] {
+function extractTags<T extends { tag?: string }>(items: T[]): string[] {
   const tagsSet = new Set<string>();
   items.forEach(item => {
     if (item.tag) {
@@ -83,6 +107,16 @@ function paginate<T>(items: T[], params: PaginationParams): PaginatedResponse<T>
   };
 }
 
+function defaultPaginatedResponse<T>(data: T[]): PaginatedResponse<T> {
+  return {
+    data,
+    count: data.length,
+    page: 0,
+    pageSize: data.length,
+    hasMore: false
+  };
+}
+
 // ==========================================
 // DataService Class
 // ==========================================
@@ -103,35 +137,79 @@ class DataService {
   };
 
   // ==========================================
+  // Configuration
+  // ==========================================
+
+  setDataSource(mode: DataSourceMode): void {
+    currentDataSource = mode;
+    this.clearCache();
+    console.log(`DataService: switched to ${mode} mode`);
+  }
+
+  getDataSource(): DataSourceMode {
+    return currentDataSource;
+  }
+
+  isUsingSupabase(): boolean {
+    return currentDataSource === 'supabase';
+  }
+
+  isUsingExpress(): boolean {
+    return currentDataSource === 'express';
+  }
+
+  isUsingLocal(): boolean {
+    return currentDataSource === 'local';
+  }
+
+  // ==========================================
   // Hadiths
   // ==========================================
 
   async getHadiths(params?: PaginationParams): Promise<PaginatedResponse<Hadith>> {
-    if (USE_SUPABASE) {
-      const { page = 0, pageSize = 20 } = params || {};
-      const from = page * pageSize;
-      const to = from + pageSize - 1;
+    const { page = 0, pageSize = 20 } = params || {};
 
-      const { data, count, error } = await supabase
-        .from('hadiths')
-        .select('*', { count: 'exact' })
-        .range(from, to)
-        .order('id');
+    // Mode Supabase
+    if (currentDataSource === 'supabase') {
+      try {
+        const from = page * pageSize;
+        const to = from + pageSize - 1;
 
-      if (error) {
-        console.error('Supabase error:', error);
+        const { data, count, error } = await supabase
+          .from('hadith')
+          .select('*', { count: 'exact' })
+          .range(from, to)
+          .order('id');
+
+        if (error) throw error;
+
+        return {
+          data: data as Hadith[],
+          count: count || 0,
+          page,
+          pageSize,
+          hasMore: (from + pageSize) < (count || 0)
+        };
+      } catch (err) {
+        console.error('Supabase error, falling back to local:', err);
         return this.getHadithsLocal(params);
       }
-
-      return {
-        data: data as Hadith[],
-        count: count || 0,
-        page,
-        pageSize,
-        hasMore: (from + pageSize) < (count || 0)
-      };
     }
 
+    // Mode Express
+    if (currentDataSource === 'express') {
+      try {
+        const response = await api.get('/hadith', {
+          params: { page, pageSize }
+        });
+        return response.data as PaginatedResponse<Hadith>;
+      } catch (err) {
+        console.error('Express error, falling back to local:', err);
+        return this.getHadithsLocal(params);
+      }
+    }
+
+    // Mode Local
     return this.getHadithsLocal(params);
   }
 
@@ -142,13 +220,7 @@ class DataService {
     if (params) {
       return paginate(this.cache.hadiths, params);
     }
-    return {
-      data: this.cache.hadiths,
-      count: this.cache.hadiths.length,
-      page: 0,
-      pageSize: this.cache.hadiths.length,
-      hasMore: false
-    };
+    return defaultPaginatedResponse(this.cache.hadiths);
   }
 
   async searchHadiths(
@@ -156,25 +228,25 @@ class DataService {
     tag?: string | null,
     params?: PaginationParams
   ): Promise<PaginatedResponse<Hadith>> {
-    if (USE_SUPABASE && searchTerm.trim()) {
-      const { page = 0, pageSize = 20 } = params || {};
-      const from = page * pageSize;
-      const to = from + pageSize - 1;
+    const { page = 0, pageSize = 20 } = params || {};
 
-      let query = supabase
-        .from('hadiths')
-        .select('*', { count: 'exact' })
-        .or(`sujet.ilike.%${searchTerm}%,texte_arabe.ilike.%${searchTerm}%,texte_francais.ilike.%${searchTerm}%`);
+    if (currentDataSource === 'supabase' && searchTerm.trim()) {
+      try {
+        const from = page * pageSize;
+        const to = from + pageSize - 1;
 
-      if (tag) {
-        query = query.ilike('tag', `%${tag}%`);
-      }
+        let query = supabase
+          .from('hadith')
+          .select('*', { count: 'exact' })
+          .or(`sujet.ilike.%${searchTerm}%,texte_arabe.ilike.%${searchTerm}%,texte_francais.ilike.%${searchTerm}%`);
 
-      const { data, count, error } = await query.range(from, to).order('id');
+        if (tag) {
+          query = query.ilike('tag', `%${tag}%`);
+        }
 
-      if (error) {
-        console.error('Supabase search error:', error);
-      } else {
+        const { data, count, error } = await query.range(from, to).order('id');
+        if (error) throw error;
+
         return {
           data: data as Hadith[],
           count: count || 0,
@@ -182,9 +254,23 @@ class DataService {
           pageSize,
           hasMore: (from + pageSize) < (count || 0)
         };
+      } catch (err) {
+        console.error('Supabase search error:', err);
       }
     }
 
+    if (currentDataSource === 'express' && searchTerm.trim()) {
+      try {
+        const response = await api.get('/hadith/search', {
+          params: { q: searchTerm, tag, page, pageSize }
+        });
+        return response.data as PaginatedResponse<Hadith>;
+      } catch (err) {
+        console.error('Express search error:', err);
+      }
+    }
+
+    // Fallback local
     const all = await this.getHadiths();
     let filtered = filterBySearch(all.data, searchTerm);
     filtered = filterByTag(filtered, tag ?? null);
@@ -192,23 +278,28 @@ class DataService {
     if (params) {
       return paginate(filtered, params);
     }
-    return {
-      data: filtered,
-      count: filtered.length,
-      page: 0,
-      pageSize: filtered.length,
-      hasMore: false
-    };
+    return defaultPaginatedResponse(filtered);
   }
 
   async getHadithTags(): Promise<string[]> {
-    if (USE_SUPABASE) {
-      const { data, error } = await supabase
-        .from('hadiths')
-        .select('tag');
-
-      if (!error && data) {
+    if (currentDataSource === 'supabase') {
+      try {
+        const { data, error } = await supabase
+          .from('hadith')
+          .select('tag');
+        if (error) throw error;
         return extractTags(data as { tag?: string }[]);
+      } catch (err) {
+        console.error('Error fetching hadith tags:', err);
+      }
+    }
+
+    if (currentDataSource === 'express') {
+      try {
+        const response = await api.get('/hadith/tags');
+        return response.data as string[];
+      } catch (err) {
+        console.error('Error fetching hadith tags:', err);
       }
     }
 
@@ -223,29 +314,44 @@ class DataService {
   // ==========================================
 
   async getCoran(params?: PaginationParams): Promise<PaginatedResponse<Coran>> {
-    if (USE_SUPABASE) {
-      const { page = 0, pageSize = 20 } = params || {};
-      const from = page * pageSize;
-      const to = from + pageSize - 1;
+    const { page = 0, pageSize = 20 } = params || {};
 
-      const { data, count, error } = await supabase
-        .from('coran')
-        .select('*', { count: 'exact' })
-        .range(from, to)
-        .order('id');
+    if (currentDataSource === 'supabase') {
+      try {
+        const from = page * pageSize;
+        const to = from + pageSize - 1;
 
-      if (error) {
-        console.error('Supabase error:', error);
+        const { data, count, error } = await supabase
+          .from('coran')
+          .select('*', { count: 'exact' })
+          .range(from, to)
+          .order('id');
+
+        if (error) throw error;
+
+        return {
+          data: data as Coran[],
+          count: count || 0,
+          page,
+          pageSize,
+          hasMore: (from + pageSize) < (count || 0)
+        };
+      } catch (err) {
+        console.error('Supabase error:', err);
         return this.getCoranLocal(params);
       }
+    }
 
-      return {
-        data: data as Coran[],
-        count: count || 0,
-        page,
-        pageSize,
-        hasMore: (from + pageSize) < (count || 0)
-      };
+    if (currentDataSource === 'express') {
+      try {
+        const response = await api.get('/coran', {
+          params: { page, pageSize }
+        });
+        return response.data as PaginatedResponse<Coran>;
+      } catch (err) {
+        console.error('Express error:', err);
+        return this.getCoranLocal(params);
+      }
     }
 
     return this.getCoranLocal(params);
@@ -258,13 +364,7 @@ class DataService {
     if (params) {
       return paginate(this.cache.coran, params);
     }
-    return {
-      data: this.cache.coran,
-      count: this.cache.coran.length,
-      page: 0,
-      pageSize: this.cache.coran.length,
-      hasMore: false
-    };
+    return defaultPaginatedResponse(this.cache.coran);
   }
 
   async searchCoran(
@@ -272,23 +372,25 @@ class DataService {
     tag?: string | null,
     params?: PaginationParams
   ): Promise<PaginatedResponse<Coran>> {
-    if (USE_SUPABASE && searchTerm.trim()) {
-      const { page = 0, pageSize = 20 } = params || {};
-      const from = page * pageSize;
-      const to = from + pageSize - 1;
+    const { page = 0, pageSize = 20 } = params || {};
 
-      let query = supabase
-        .from('coran')
-        .select('*', { count: 'exact' })
-        .or(`sujet.ilike.%${searchTerm}%,texte_arabe.ilike.%${searchTerm}%,texte_francais.ilike.%${searchTerm}%,sourate.ilike.%${searchTerm}%`);
+    if (currentDataSource === 'supabase' && searchTerm.trim()) {
+      try {
+        const from = page * pageSize;
+        const to = from + pageSize - 1;
 
-      if (tag) {
-        query = query.ilike('tag', `%${tag}%`);
-      }
+        let query = supabase
+          .from('coran')
+          .select('*', { count: 'exact' })
+          .or(`sujet.ilike.%${searchTerm}%,texte_arabe.ilike.%${searchTerm}%,texte_francais.ilike.%${searchTerm}%,sourate.ilike.%${searchTerm}%`);
 
-      const { data, count, error } = await query.range(from, to).order('id');
+        if (tag) {
+          query = query.ilike('tag', `%${tag}%`);
+        }
 
-      if (!error) {
+        const { data, count, error } = await query.range(from, to).order('id');
+        if (error) throw error;
+
         return {
           data: data as Coran[],
           count: count || 0,
@@ -296,6 +398,19 @@ class DataService {
           pageSize,
           hasMore: (from + pageSize) < (count || 0)
         };
+      } catch (err) {
+        console.error('Supabase search error:', err);
+      }
+    }
+
+    if (currentDataSource === 'express' && searchTerm.trim()) {
+      try {
+        const response = await api.get('/coran/search', {
+          params: { q: searchTerm, tag, page, pageSize }
+        });
+        return response.data as PaginatedResponse<Coran>;
+      } catch (err) {
+        console.error('Express search error:', err);
       }
     }
 
@@ -306,23 +421,26 @@ class DataService {
     if (params) {
       return paginate(filtered, params);
     }
-    return {
-      data: filtered,
-      count: filtered.length,
-      page: 0,
-      pageSize: filtered.length,
-      hasMore: false
-    };
+    return defaultPaginatedResponse(filtered);
   }
 
   async getCoranTags(): Promise<string[]> {
-    if (USE_SUPABASE) {
-      const { data, error } = await supabase
-        .from('coran')
-        .select('tag');
-
-      if (!error && data) {
+    if (currentDataSource === 'supabase') {
+      try {
+        const { data, error } = await supabase.from('coran').select('tag');
+        if (error) throw error;
         return extractTags(data as { tag?: string }[]);
+      } catch (err) {
+        console.error('Error fetching coran tags:', err);
+      }
+    }
+
+    if (currentDataSource === 'express') {
+      try {
+        const response = await api.get('/coran/tags');
+        return response.data as string[];
+      } catch (err) {
+        console.error('Error fetching coran tags:', err);
       }
     }
 
@@ -337,29 +455,44 @@ class DataService {
   // ==========================================
 
   async getDhikrs(params?: PaginationParams): Promise<PaginatedResponse<Dhikr>> {
-    if (USE_SUPABASE) {
-      const { page = 0, pageSize = 20 } = params || {};
-      const from = page * pageSize;
-      const to = from + pageSize - 1;
+    const { page = 0, pageSize = 20 } = params || {};
 
-      const { data, count, error } = await supabase
-        .from('dhikrs')
-        .select('*', { count: 'exact' })
-        .range(from, to)
-        .order('id');
+    if (currentDataSource === 'supabase') {
+      try {
+        const from = page * pageSize;
+        const to = from + pageSize - 1;
 
-      if (error) {
-        console.error('Supabase error:', error);
+        const { data, count, error } = await supabase
+          .from('dhikr')
+          .select('*', { count: 'exact' })
+          .range(from, to)
+          .order('id');
+
+        if (error) throw error;
+
+        return {
+          data: data as Dhikr[],
+          count: count || 0,
+          page,
+          pageSize,
+          hasMore: (from + pageSize) < (count || 0)
+        };
+      } catch (err) {
+        console.error('Supabase error:', err);
         return this.getDhikrsLocal(params);
       }
+    }
 
-      return {
-        data: data as Dhikr[],
-        count: count || 0,
-        page,
-        pageSize,
-        hasMore: (from + pageSize) < (count || 0)
-      };
+    if (currentDataSource === 'express') {
+      try {
+        const response = await api.get('/dhikr', {
+          params: { page, pageSize }
+        });
+        return response.data as PaginatedResponse<Dhikr>;
+      } catch (err) {
+        console.error('Express error:', err);
+        return this.getDhikrsLocal(params);
+      }
     }
 
     return this.getDhikrsLocal(params);
@@ -372,13 +505,7 @@ class DataService {
     if (params) {
       return paginate(this.cache.dhikrs, params);
     }
-    return {
-      data: this.cache.dhikrs,
-      count: this.cache.dhikrs.length,
-      page: 0,
-      pageSize: this.cache.dhikrs.length,
-      hasMore: false
-    };
+    return defaultPaginatedResponse(this.cache.dhikrs);
   }
 
   async searchDhikrs(
@@ -386,23 +513,25 @@ class DataService {
     tag?: string | null,
     params?: PaginationParams
   ): Promise<PaginatedResponse<Dhikr>> {
-    if (USE_SUPABASE && searchTerm.trim()) {
-      const { page = 0, pageSize = 20 } = params || {};
-      const from = page * pageSize;
-      const to = from + pageSize - 1;
+    const { page = 0, pageSize = 20 } = params || {};
 
-      let query = supabase
-        .from('dhikrs')
-        .select('*', { count: 'exact' })
-        .or(`sujet.ilike.%${searchTerm}%,texte_arabe.ilike.%${searchTerm}%,texte_francais.ilike.%${searchTerm}%`);
+    if (currentDataSource === 'supabase' && searchTerm.trim()) {
+      try {
+        const from = page * pageSize;
+        const to = from + pageSize - 1;
 
-      if (tag) {
-        query = query.ilike('tag', `%${tag}%`);
-      }
+        let query = supabase
+          .from('dhikr')
+          .select('*', { count: 'exact' })
+          .or(`sujet.ilike.%${searchTerm}%,texte_arabe.ilike.%${searchTerm}%,texte_francais.ilike.%${searchTerm}%`);
 
-      const { data, count, error } = await query.range(from, to).order('id');
+        if (tag) {
+          query = query.ilike('tag', `%${tag}%`);
+        }
 
-      if (!error) {
+        const { data, count, error } = await query.range(from, to).order('id');
+        if (error) throw error;
+
         return {
           data: data as Dhikr[],
           count: count || 0,
@@ -410,6 +539,19 @@ class DataService {
           pageSize,
           hasMore: (from + pageSize) < (count || 0)
         };
+      } catch (err) {
+        console.error('Supabase search error:', err);
+      }
+    }
+
+    if (currentDataSource === 'express' && searchTerm.trim()) {
+      try {
+        const response = await api.get('/dhikr/search', {
+          params: { q: searchTerm, tag, page, pageSize }
+        });
+        return response.data as PaginatedResponse<Dhikr>;
+      } catch (err) {
+        console.error('Express search error:', err);
       }
     }
 
@@ -420,23 +562,26 @@ class DataService {
     if (params) {
       return paginate(filtered, params);
     }
-    return {
-      data: filtered,
-      count: filtered.length,
-      page: 0,
-      pageSize: filtered.length,
-      hasMore: false
-    };
+    return defaultPaginatedResponse(filtered);
   }
 
   async getDhikrTags(): Promise<string[]> {
-    if (USE_SUPABASE) {
-      const { data, error } = await supabase
-        .from('dhikrs')
-        .select('tag');
-
-      if (!error && data) {
+    if (currentDataSource === 'supabase') {
+      try {
+        const { data, error } = await supabase.from('dhikr').select('tag');
+        if (error) throw error;
         return extractTags(data as { tag?: string }[]);
+      } catch (err) {
+        console.error('Error fetching dhikr tags:', err);
+      }
+    }
+
+    if (currentDataSource === 'express') {
+      try {
+        const response = await api.get('/dhikr/tags');
+        return response.data as string[];
+      } catch (err) {
+        console.error('Error fetching dhikr tags:', err);
       }
     }
 
@@ -451,29 +596,44 @@ class DataService {
   // ==========================================
 
   async getDouaas(params?: PaginationParams): Promise<PaginatedResponse<Douaa>> {
-    if (USE_SUPABASE) {
-      const { page = 0, pageSize = 20 } = params || {};
-      const from = page * pageSize;
-      const to = from + pageSize - 1;
+    const { page = 0, pageSize = 20 } = params || {};
 
-      const { data, count, error } = await supabase
-        .from('douaas')
-        .select('*', { count: 'exact' })
-        .range(from, to)
-        .order('id');
+    if (currentDataSource === 'supabase') {
+      try {
+        const from = page * pageSize;
+        const to = from + pageSize - 1;
 
-      if (error) {
-        console.error('Supabase error:', error);
+        const { data, count, error } = await supabase
+          .from('douaa')
+          .select('*', { count: 'exact' })
+          .range(from, to)
+          .order('id');
+
+        if (error) throw error;
+
+        return {
+          data: data as Douaa[],
+          count: count || 0,
+          page,
+          pageSize,
+          hasMore: (from + pageSize) < (count || 0)
+        };
+      } catch (err) {
+        console.error('Supabase error:', err);
         return this.getDouaasLocal(params);
       }
+    }
 
-      return {
-        data: data as Douaa[],
-        count: count || 0,
-        page,
-        pageSize,
-        hasMore: (from + pageSize) < (count || 0)
-      };
+    if (currentDataSource === 'express') {
+      try {
+        const response = await api.get('/douaa', {
+          params: { page, pageSize }
+        });
+        return response.data as PaginatedResponse<Douaa>;
+      } catch (err) {
+        console.error('Express error:', err);
+        return this.getDouaasLocal(params);
+      }
     }
 
     return this.getDouaasLocal(params);
@@ -486,13 +646,7 @@ class DataService {
     if (params) {
       return paginate(this.cache.douaas, params);
     }
-    return {
-      data: this.cache.douaas,
-      count: this.cache.douaas.length,
-      page: 0,
-      pageSize: this.cache.douaas.length,
-      hasMore: false
-    };
+    return defaultPaginatedResponse(this.cache.douaas);
   }
 
   async searchDouaas(
@@ -500,23 +654,25 @@ class DataService {
     tag?: string | null,
     params?: PaginationParams
   ): Promise<PaginatedResponse<Douaa>> {
-    if (USE_SUPABASE && searchTerm.trim()) {
-      const { page = 0, pageSize = 20 } = params || {};
-      const from = page * pageSize;
-      const to = from + pageSize - 1;
+    const { page = 0, pageSize = 20 } = params || {};
 
-      let query = supabase
-        .from('douaas')
-        .select('*', { count: 'exact' })
-        .or(`sujet.ilike.%${searchTerm}%,texte_arabe.ilike.%${searchTerm}%,texte_francais.ilike.%${searchTerm}%`);
+    if (currentDataSource === 'supabase' && searchTerm.trim()) {
+      try {
+        const from = page * pageSize;
+        const to = from + pageSize - 1;
 
-      if (tag) {
-        query = query.ilike('tag', `%${tag}%`);
-      }
+        let query = supabase
+          .from('douaa')
+          .select('*', { count: 'exact' })
+          .or(`sujet.ilike.%${searchTerm}%,texte_arabe.ilike.%${searchTerm}%,texte_francais.ilike.%${searchTerm}%`);
 
-      const { data, count, error } = await query.range(from, to).order('id');
+        if (tag) {
+          query = query.ilike('tag', `%${tag}%`);
+        }
 
-      if (!error) {
+        const { data, count, error } = await query.range(from, to).order('id');
+        if (error) throw error;
+
         return {
           data: data as Douaa[],
           count: count || 0,
@@ -524,6 +680,19 @@ class DataService {
           pageSize,
           hasMore: (from + pageSize) < (count || 0)
         };
+      } catch (err) {
+        console.error('Supabase search error:', err);
+      }
+    }
+
+    if (currentDataSource === 'express' && searchTerm.trim()) {
+      try {
+        const response = await api.get('/douaa/search', {
+          params: { q: searchTerm, tag, page, pageSize }
+        });
+        return response.data as PaginatedResponse<Douaa>;
+      } catch (err) {
+        console.error('Express search error:', err);
       }
     }
 
@@ -534,23 +703,26 @@ class DataService {
     if (params) {
       return paginate(filtered, params);
     }
-    return {
-      data: filtered,
-      count: filtered.length,
-      page: 0,
-      pageSize: filtered.length,
-      hasMore: false
-    };
+    return defaultPaginatedResponse(filtered);
   }
 
   async getDouaaTags(): Promise<string[]> {
-    if (USE_SUPABASE) {
-      const { data, error } = await supabase
-        .from('douaas')
-        .select('tag');
-
-      if (!error && data) {
+    if (currentDataSource === 'supabase') {
+      try {
+        const { data, error } = await supabase.from('douaa').select('tag');
+        if (error) throw error;
         return extractTags(data as { tag?: string }[]);
+      } catch (err) {
+        console.error('Error fetching douaa tags:', err);
+      }
+    }
+
+    if (currentDataSource === 'express') {
+      try {
+        const response = await api.get('/douaa/tags');
+        return response.data as string[];
+      } catch (err) {
+        console.error('Error fetching douaa tags:', err);
       }
     }
 
@@ -561,33 +733,48 @@ class DataService {
   }
 
   // ==========================================
-  // Savants
+  // Savants (parole table in Supabase)
   // ==========================================
 
   async getSavants(params?: PaginationParams): Promise<PaginatedResponse<Savant>> {
-    if (USE_SUPABASE) {
-      const { page = 0, pageSize = 20 } = params || {};
-      const from = page * pageSize;
-      const to = from + pageSize - 1;
+    const { page = 0, pageSize = 20 } = params || {};
 
-      const { data, count, error } = await supabase
-        .from('savants')
-        .select('*', { count: 'exact' })
-        .range(from, to)
-        .order('id');
+    if (currentDataSource === 'supabase') {
+      try {
+        const from = page * pageSize;
+        const to = from + pageSize - 1;
 
-      if (error) {
-        console.error('Supabase error:', error);
+        const { data, count, error } = await supabase
+          .from('parole')
+          .select('*', { count: 'exact' })
+          .range(from, to)
+          .order('id');
+
+        if (error) throw error;
+
+        return {
+          data: data as Savant[],
+          count: count || 0,
+          page,
+          pageSize,
+          hasMore: (from + pageSize) < (count || 0)
+        };
+      } catch (err) {
+        console.error('Supabase error:', err);
         return this.getSavantsLocal(params);
       }
+    }
 
-      return {
-        data: data as Savant[],
-        count: count || 0,
-        page,
-        pageSize,
-        hasMore: (from + pageSize) < (count || 0)
-      };
+    if (currentDataSource === 'express') {
+      try {
+        const response = await api.get('/parole', {
+          params: { page, pageSize }
+        });
+        return response.data as PaginatedResponse<Savant>;
+      } catch (err) {
+        console.error('Express error:', err);
+        return this.getSavantsLocal(params);
+      }
     }
 
     return this.getSavantsLocal(params);
@@ -600,13 +787,7 @@ class DataService {
     if (params) {
       return paginate(this.cache.savants, params);
     }
-    return {
-      data: this.cache.savants,
-      count: this.cache.savants.length,
-      page: 0,
-      pageSize: this.cache.savants.length,
-      hasMore: false
-    };
+    return defaultPaginatedResponse(this.cache.savants);
   }
 
   async searchSavants(
@@ -614,23 +795,25 @@ class DataService {
     tag?: string | null,
     params?: PaginationParams
   ): Promise<PaginatedResponse<Savant>> {
-    if (USE_SUPABASE && searchTerm.trim()) {
-      const { page = 0, pageSize = 20 } = params || {};
-      const from = page * pageSize;
-      const to = from + pageSize - 1;
+    const { page = 0, pageSize = 20 } = params || {};
 
-      let query = supabase
-        .from('savants')
-        .select('*', { count: 'exact' })
-        .or(`sujet.ilike.%${searchTerm}%,savant.ilike.%${searchTerm}%,texte_arabe.ilike.%${searchTerm}%,texte_francais.ilike.%${searchTerm}%`);
+    if (currentDataSource === 'supabase' && searchTerm.trim()) {
+      try {
+        const from = page * pageSize;
+        const to = from + pageSize - 1;
 
-      if (tag) {
-        query = query.ilike('tag', `%${tag}%`);
-      }
+        let query = supabase
+          .from('parole')
+          .select('*', { count: 'exact' })
+          .or(`sujet.ilike.%${searchTerm}%,savant.ilike.%${searchTerm}%,texte_arabe.ilike.%${searchTerm}%,texte_francais.ilike.%${searchTerm}%`);
 
-      const { data, count, error } = await query.range(from, to).order('id');
+        if (tag) {
+          query = query.ilike('tag', `%${tag}%`);
+        }
 
-      if (!error) {
+        const { data, count, error } = await query.range(from, to).order('id');
+        if (error) throw error;
+
         return {
           data: data as Savant[],
           count: count || 0,
@@ -638,6 +821,19 @@ class DataService {
           pageSize,
           hasMore: (from + pageSize) < (count || 0)
         };
+      } catch (err) {
+        console.error('Supabase search error:', err);
+      }
+    }
+
+    if (currentDataSource === 'express' && searchTerm.trim()) {
+      try {
+        const response = await api.get('/parole/search', {
+          params: { q: searchTerm, tag, page, pageSize }
+        });
+        return response.data as PaginatedResponse<Savant>;
+      } catch (err) {
+        console.error('Express search error:', err);
       }
     }
 
@@ -661,23 +857,26 @@ class DataService {
     if (params) {
       return paginate(filtered, params);
     }
-    return {
-      data: filtered,
-      count: filtered.length,
-      page: 0,
-      pageSize: filtered.length,
-      hasMore: false
-    };
+    return defaultPaginatedResponse(filtered);
   }
 
   async getSavantTags(): Promise<string[]> {
-    if (USE_SUPABASE) {
-      const { data, error } = await supabase
-        .from('savants')
-        .select('tag');
-
-      if (!error && data) {
+    if (currentDataSource === 'supabase') {
+      try {
+        const { data, error } = await supabase.from('parole').select('tag');
+        if (error) throw error;
         return extractTags(data as { tag?: string }[]);
+      } catch (err) {
+        console.error('Error fetching savant tags:', err);
+      }
+    }
+
+    if (currentDataSource === 'express') {
+      try {
+        const response = await api.get('/parole/tags');
+        return response.data as string[];
+      } catch (err) {
+        console.error('Error fetching savant tags:', err);
       }
     }
 
@@ -688,17 +887,26 @@ class DataService {
   }
 
   async getSavantNames(): Promise<string[]> {
-    if (USE_SUPABASE) {
-      const { data, error } = await supabase
-        .from('savants')
-        .select('savant');
-
-      if (!error && data) {
+    if (currentDataSource === 'supabase') {
+      try {
+        const { data, error } = await supabase.from('parole').select('savant');
+        if (error) throw error;
         const names = new Set<string>();
         (data as { savant?: string }[]).forEach(s => {
           if (s.savant) names.add(s.savant);
         });
         return Array.from(names).sort();
+      } catch (err) {
+        console.error('Error fetching savant names:', err);
+      }
+    }
+
+    if (currentDataSource === 'express') {
+      try {
+        const response = await api.get('/parole/savants');
+        return response.data as string[];
+      } catch (err) {
+        console.error('Error fetching savant names:', err);
       }
     }
 
@@ -724,10 +932,6 @@ class DataService {
       douaas: null,
       savants: null
     };
-  }
-
-  isUsingSupabase(): boolean {
-    return USE_SUPABASE;
   }
 }
 
