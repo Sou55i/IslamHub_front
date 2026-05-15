@@ -2,10 +2,10 @@
  * DataService - Service unifié pour la gestion des données
  *
  * Ce service abstrait l'accès aux données pour faciliter la migration
- * de JSON local vers Supabase (ou autre backend).
+ * de JSON local vers Supabase.
  *
- * Actuellement: JSON local
- * Futur: Supabase avec cache local SQLite
+ * Si les credentials Supabase sont configurés, utilise Supabase.
+ * Sinon, utilise les données JSON locales en fallback.
  */
 
 import type {
@@ -19,21 +19,25 @@ import type {
   BaseText
 } from '../types';
 
-// Import des données JSON locales
+import { supabase } from './supabase';
+
+// Import des données JSON locales (fallback)
 import hadithsData from '../data/hadith.json';
 import coranData from '../data/coran.json';
 import dhikrData from '../data/dhikr.json';
 import douaaData from '../data/douaa.json';
 import savantData from '../data/savant.json';
 
-// Configuration - Changer cette valeur quand on passe à Supabase
-const USE_LOCAL_DATA = true;
+// Détecter si Supabase est configuré
+const USE_SUPABASE = Boolean(
+  import.meta.env.VITE_SUPABASE_URL &&
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 
 // ==========================================
 // Fonctions utilitaires
 // ==========================================
 
-/** Extrait les tags uniques d'une liste de textes */
 function extractTags<T extends BaseText>(items: T[]): string[] {
   const tagsSet = new Set<string>();
   items.forEach(item => {
@@ -44,7 +48,6 @@ function extractTags<T extends BaseText>(items: T[]): string[] {
   return Array.from(tagsSet).sort();
 }
 
-/** Filtre les textes selon un terme de recherche */
 function filterBySearch<T extends BaseText>(items: T[], searchTerm: string): T[] {
   if (!searchTerm.trim()) return items;
 
@@ -58,7 +61,6 @@ function filterBySearch<T extends BaseText>(items: T[], searchTerm: string): T[]
   );
 }
 
-/** Filtre les textes selon un tag */
 function filterByTag<T extends BaseText>(items: T[], tag: string | null): T[] {
   if (!tag) return items;
   return items.filter(item =>
@@ -66,7 +68,6 @@ function filterByTag<T extends BaseText>(items: T[], tag: string | null): T[] {
   );
 }
 
-/** Pagine une liste */
 function paginate<T>(items: T[], params: PaginationParams): PaginatedResponse<T> {
   const { page, pageSize } = params;
   const start = page * pageSize;
@@ -87,7 +88,6 @@ function paginate<T>(items: T[], params: PaginationParams): PaginatedResponse<T>
 // ==========================================
 
 class DataService {
-  // Cache local pour éviter les re-imports
   private cache: {
     hadiths: Hadith[] | null;
     coran: Coran[] | null;
@@ -107,23 +107,48 @@ class DataService {
   // ==========================================
 
   async getHadiths(params?: PaginationParams): Promise<PaginatedResponse<Hadith>> {
-    if (USE_LOCAL_DATA) {
-      if (!this.cache.hadiths) {
-        this.cache.hadiths = hadithsData as Hadith[];
+    if (USE_SUPABASE) {
+      const { page = 0, pageSize = 20 } = params || {};
+      const from = page * pageSize;
+      const to = from + pageSize - 1;
+
+      const { data, count, error } = await supabase
+        .from('hadiths')
+        .select('*', { count: 'exact' })
+        .range(from, to)
+        .order('id');
+
+      if (error) {
+        console.error('Supabase error:', error);
+        return this.getHadithsLocal(params);
       }
-      if (params) {
-        return paginate(this.cache.hadiths, params);
-      }
+
       return {
-        data: this.cache.hadiths,
-        count: this.cache.hadiths.length,
-        page: 0,
-        pageSize: this.cache.hadiths.length,
-        hasMore: false
+        data: data as Hadith[],
+        count: count || 0,
+        page,
+        pageSize,
+        hasMore: (from + pageSize) < (count || 0)
       };
     }
-    // TODO: Supabase implementation
-    throw new Error('Supabase not implemented yet');
+
+    return this.getHadithsLocal(params);
+  }
+
+  private getHadithsLocal(params?: PaginationParams): PaginatedResponse<Hadith> {
+    if (!this.cache.hadiths) {
+      this.cache.hadiths = hadithsData as Hadith[];
+    }
+    if (params) {
+      return paginate(this.cache.hadiths, params);
+    }
+    return {
+      data: this.cache.hadiths,
+      count: this.cache.hadiths.length,
+      page: 0,
+      pageSize: this.cache.hadiths.length,
+      hasMore: false
+    };
   }
 
   async searchHadiths(
@@ -131,6 +156,35 @@ class DataService {
     tag?: string | null,
     params?: PaginationParams
   ): Promise<PaginatedResponse<Hadith>> {
+    if (USE_SUPABASE && searchTerm.trim()) {
+      const { page = 0, pageSize = 20 } = params || {};
+      const from = page * pageSize;
+      const to = from + pageSize - 1;
+
+      let query = supabase
+        .from('hadiths')
+        .select('*', { count: 'exact' })
+        .or(`sujet.ilike.%${searchTerm}%,texte_arabe.ilike.%${searchTerm}%,texte_francais.ilike.%${searchTerm}%`);
+
+      if (tag) {
+        query = query.ilike('tag', `%${tag}%`);
+      }
+
+      const { data, count, error } = await query.range(from, to).order('id');
+
+      if (error) {
+        console.error('Supabase search error:', error);
+      } else {
+        return {
+          data: data as Hadith[],
+          count: count || 0,
+          page,
+          pageSize,
+          hasMore: (from + pageSize) < (count || 0)
+        };
+      }
+    }
+
     const all = await this.getHadiths();
     let filtered = filterBySearch(all.data, searchTerm);
     filtered = filterByTag(filtered, tag ?? null);
@@ -147,7 +201,17 @@ class DataService {
     };
   }
 
-  getHadithTags(): string[] {
+  async getHadithTags(): Promise<string[]> {
+    if (USE_SUPABASE) {
+      const { data, error } = await supabase
+        .from('hadiths')
+        .select('tag');
+
+      if (!error && data) {
+        return extractTags(data as { tag?: string }[]);
+      }
+    }
+
     if (!this.cache.hadiths) {
       this.cache.hadiths = hadithsData as Hadith[];
     }
@@ -159,22 +223,48 @@ class DataService {
   // ==========================================
 
   async getCoran(params?: PaginationParams): Promise<PaginatedResponse<Coran>> {
-    if (USE_LOCAL_DATA) {
-      if (!this.cache.coran) {
-        this.cache.coran = coranData as Coran[];
+    if (USE_SUPABASE) {
+      const { page = 0, pageSize = 20 } = params || {};
+      const from = page * pageSize;
+      const to = from + pageSize - 1;
+
+      const { data, count, error } = await supabase
+        .from('coran')
+        .select('*', { count: 'exact' })
+        .range(from, to)
+        .order('id');
+
+      if (error) {
+        console.error('Supabase error:', error);
+        return this.getCoranLocal(params);
       }
-      if (params) {
-        return paginate(this.cache.coran, params);
-      }
+
       return {
-        data: this.cache.coran,
-        count: this.cache.coran.length,
-        page: 0,
-        pageSize: this.cache.coran.length,
-        hasMore: false
+        data: data as Coran[],
+        count: count || 0,
+        page,
+        pageSize,
+        hasMore: (from + pageSize) < (count || 0)
       };
     }
-    throw new Error('Supabase not implemented yet');
+
+    return this.getCoranLocal(params);
+  }
+
+  private getCoranLocal(params?: PaginationParams): PaginatedResponse<Coran> {
+    if (!this.cache.coran) {
+      this.cache.coran = coranData as Coran[];
+    }
+    if (params) {
+      return paginate(this.cache.coran, params);
+    }
+    return {
+      data: this.cache.coran,
+      count: this.cache.coran.length,
+      page: 0,
+      pageSize: this.cache.coran.length,
+      hasMore: false
+    };
   }
 
   async searchCoran(
@@ -182,6 +272,33 @@ class DataService {
     tag?: string | null,
     params?: PaginationParams
   ): Promise<PaginatedResponse<Coran>> {
+    if (USE_SUPABASE && searchTerm.trim()) {
+      const { page = 0, pageSize = 20 } = params || {};
+      const from = page * pageSize;
+      const to = from + pageSize - 1;
+
+      let query = supabase
+        .from('coran')
+        .select('*', { count: 'exact' })
+        .or(`sujet.ilike.%${searchTerm}%,texte_arabe.ilike.%${searchTerm}%,texte_francais.ilike.%${searchTerm}%,sourate.ilike.%${searchTerm}%`);
+
+      if (tag) {
+        query = query.ilike('tag', `%${tag}%`);
+      }
+
+      const { data, count, error } = await query.range(from, to).order('id');
+
+      if (!error) {
+        return {
+          data: data as Coran[],
+          count: count || 0,
+          page,
+          pageSize,
+          hasMore: (from + pageSize) < (count || 0)
+        };
+      }
+    }
+
     const all = await this.getCoran();
     let filtered = filterBySearch(all.data, searchTerm);
     filtered = filterByTag(filtered, tag ?? null);
@@ -198,7 +315,17 @@ class DataService {
     };
   }
 
-  getCoranTags(): string[] {
+  async getCoranTags(): Promise<string[]> {
+    if (USE_SUPABASE) {
+      const { data, error } = await supabase
+        .from('coran')
+        .select('tag');
+
+      if (!error && data) {
+        return extractTags(data as { tag?: string }[]);
+      }
+    }
+
     if (!this.cache.coran) {
       this.cache.coran = coranData as Coran[];
     }
@@ -210,22 +337,48 @@ class DataService {
   // ==========================================
 
   async getDhikrs(params?: PaginationParams): Promise<PaginatedResponse<Dhikr>> {
-    if (USE_LOCAL_DATA) {
-      if (!this.cache.dhikrs) {
-        this.cache.dhikrs = dhikrData as Dhikr[];
+    if (USE_SUPABASE) {
+      const { page = 0, pageSize = 20 } = params || {};
+      const from = page * pageSize;
+      const to = from + pageSize - 1;
+
+      const { data, count, error } = await supabase
+        .from('dhikrs')
+        .select('*', { count: 'exact' })
+        .range(from, to)
+        .order('id');
+
+      if (error) {
+        console.error('Supabase error:', error);
+        return this.getDhikrsLocal(params);
       }
-      if (params) {
-        return paginate(this.cache.dhikrs, params);
-      }
+
       return {
-        data: this.cache.dhikrs,
-        count: this.cache.dhikrs.length,
-        page: 0,
-        pageSize: this.cache.dhikrs.length,
-        hasMore: false
+        data: data as Dhikr[],
+        count: count || 0,
+        page,
+        pageSize,
+        hasMore: (from + pageSize) < (count || 0)
       };
     }
-    throw new Error('Supabase not implemented yet');
+
+    return this.getDhikrsLocal(params);
+  }
+
+  private getDhikrsLocal(params?: PaginationParams): PaginatedResponse<Dhikr> {
+    if (!this.cache.dhikrs) {
+      this.cache.dhikrs = dhikrData as Dhikr[];
+    }
+    if (params) {
+      return paginate(this.cache.dhikrs, params);
+    }
+    return {
+      data: this.cache.dhikrs,
+      count: this.cache.dhikrs.length,
+      page: 0,
+      pageSize: this.cache.dhikrs.length,
+      hasMore: false
+    };
   }
 
   async searchDhikrs(
@@ -233,6 +386,33 @@ class DataService {
     tag?: string | null,
     params?: PaginationParams
   ): Promise<PaginatedResponse<Dhikr>> {
+    if (USE_SUPABASE && searchTerm.trim()) {
+      const { page = 0, pageSize = 20 } = params || {};
+      const from = page * pageSize;
+      const to = from + pageSize - 1;
+
+      let query = supabase
+        .from('dhikrs')
+        .select('*', { count: 'exact' })
+        .or(`sujet.ilike.%${searchTerm}%,texte_arabe.ilike.%${searchTerm}%,texte_francais.ilike.%${searchTerm}%`);
+
+      if (tag) {
+        query = query.ilike('tag', `%${tag}%`);
+      }
+
+      const { data, count, error } = await query.range(from, to).order('id');
+
+      if (!error) {
+        return {
+          data: data as Dhikr[],
+          count: count || 0,
+          page,
+          pageSize,
+          hasMore: (from + pageSize) < (count || 0)
+        };
+      }
+    }
+
     const all = await this.getDhikrs();
     let filtered = filterBySearch(all.data, searchTerm);
     filtered = filterByTag(filtered, tag ?? null);
@@ -249,7 +429,17 @@ class DataService {
     };
   }
 
-  getDhikrTags(): string[] {
+  async getDhikrTags(): Promise<string[]> {
+    if (USE_SUPABASE) {
+      const { data, error } = await supabase
+        .from('dhikrs')
+        .select('tag');
+
+      if (!error && data) {
+        return extractTags(data as { tag?: string }[]);
+      }
+    }
+
     if (!this.cache.dhikrs) {
       this.cache.dhikrs = dhikrData as Dhikr[];
     }
@@ -261,22 +451,48 @@ class DataService {
   // ==========================================
 
   async getDouaas(params?: PaginationParams): Promise<PaginatedResponse<Douaa>> {
-    if (USE_LOCAL_DATA) {
-      if (!this.cache.douaas) {
-        this.cache.douaas = douaaData as Douaa[];
+    if (USE_SUPABASE) {
+      const { page = 0, pageSize = 20 } = params || {};
+      const from = page * pageSize;
+      const to = from + pageSize - 1;
+
+      const { data, count, error } = await supabase
+        .from('douaas')
+        .select('*', { count: 'exact' })
+        .range(from, to)
+        .order('id');
+
+      if (error) {
+        console.error('Supabase error:', error);
+        return this.getDouaasLocal(params);
       }
-      if (params) {
-        return paginate(this.cache.douaas, params);
-      }
+
       return {
-        data: this.cache.douaas,
-        count: this.cache.douaas.length,
-        page: 0,
-        pageSize: this.cache.douaas.length,
-        hasMore: false
+        data: data as Douaa[],
+        count: count || 0,
+        page,
+        pageSize,
+        hasMore: (from + pageSize) < (count || 0)
       };
     }
-    throw new Error('Supabase not implemented yet');
+
+    return this.getDouaasLocal(params);
+  }
+
+  private getDouaasLocal(params?: PaginationParams): PaginatedResponse<Douaa> {
+    if (!this.cache.douaas) {
+      this.cache.douaas = douaaData as Douaa[];
+    }
+    if (params) {
+      return paginate(this.cache.douaas, params);
+    }
+    return {
+      data: this.cache.douaas,
+      count: this.cache.douaas.length,
+      page: 0,
+      pageSize: this.cache.douaas.length,
+      hasMore: false
+    };
   }
 
   async searchDouaas(
@@ -284,6 +500,33 @@ class DataService {
     tag?: string | null,
     params?: PaginationParams
   ): Promise<PaginatedResponse<Douaa>> {
+    if (USE_SUPABASE && searchTerm.trim()) {
+      const { page = 0, pageSize = 20 } = params || {};
+      const from = page * pageSize;
+      const to = from + pageSize - 1;
+
+      let query = supabase
+        .from('douaas')
+        .select('*', { count: 'exact' })
+        .or(`sujet.ilike.%${searchTerm}%,texte_arabe.ilike.%${searchTerm}%,texte_francais.ilike.%${searchTerm}%`);
+
+      if (tag) {
+        query = query.ilike('tag', `%${tag}%`);
+      }
+
+      const { data, count, error } = await query.range(from, to).order('id');
+
+      if (!error) {
+        return {
+          data: data as Douaa[],
+          count: count || 0,
+          page,
+          pageSize,
+          hasMore: (from + pageSize) < (count || 0)
+        };
+      }
+    }
+
     const all = await this.getDouaas();
     let filtered = filterBySearch(all.data, searchTerm);
     filtered = filterByTag(filtered, tag ?? null);
@@ -300,7 +543,17 @@ class DataService {
     };
   }
 
-  getDouaaTags(): string[] {
+  async getDouaaTags(): Promise<string[]> {
+    if (USE_SUPABASE) {
+      const { data, error } = await supabase
+        .from('douaas')
+        .select('tag');
+
+      if (!error && data) {
+        return extractTags(data as { tag?: string }[]);
+      }
+    }
+
     if (!this.cache.douaas) {
       this.cache.douaas = douaaData as Douaa[];
     }
@@ -312,22 +565,48 @@ class DataService {
   // ==========================================
 
   async getSavants(params?: PaginationParams): Promise<PaginatedResponse<Savant>> {
-    if (USE_LOCAL_DATA) {
-      if (!this.cache.savants) {
-        this.cache.savants = savantData as Savant[];
+    if (USE_SUPABASE) {
+      const { page = 0, pageSize = 20 } = params || {};
+      const from = page * pageSize;
+      const to = from + pageSize - 1;
+
+      const { data, count, error } = await supabase
+        .from('savants')
+        .select('*', { count: 'exact' })
+        .range(from, to)
+        .order('id');
+
+      if (error) {
+        console.error('Supabase error:', error);
+        return this.getSavantsLocal(params);
       }
-      if (params) {
-        return paginate(this.cache.savants, params);
-      }
+
       return {
-        data: this.cache.savants,
-        count: this.cache.savants.length,
-        page: 0,
-        pageSize: this.cache.savants.length,
-        hasMore: false
+        data: data as Savant[],
+        count: count || 0,
+        page,
+        pageSize,
+        hasMore: (from + pageSize) < (count || 0)
       };
     }
-    throw new Error('Supabase not implemented yet');
+
+    return this.getSavantsLocal(params);
+  }
+
+  private getSavantsLocal(params?: PaginationParams): PaginatedResponse<Savant> {
+    if (!this.cache.savants) {
+      this.cache.savants = savantData as Savant[];
+    }
+    if (params) {
+      return paginate(this.cache.savants, params);
+    }
+    return {
+      data: this.cache.savants,
+      count: this.cache.savants.length,
+      page: 0,
+      pageSize: this.cache.savants.length,
+      hasMore: false
+    };
   }
 
   async searchSavants(
@@ -335,17 +614,42 @@ class DataService {
     tag?: string | null,
     params?: PaginationParams
   ): Promise<PaginatedResponse<Savant>> {
+    if (USE_SUPABASE && searchTerm.trim()) {
+      const { page = 0, pageSize = 20 } = params || {};
+      const from = page * pageSize;
+      const to = from + pageSize - 1;
+
+      let query = supabase
+        .from('savants')
+        .select('*', { count: 'exact' })
+        .or(`sujet.ilike.%${searchTerm}%,savant.ilike.%${searchTerm}%,texte_arabe.ilike.%${searchTerm}%,texte_francais.ilike.%${searchTerm}%`);
+
+      if (tag) {
+        query = query.ilike('tag', `%${tag}%`);
+      }
+
+      const { data, count, error } = await query.range(from, to).order('id');
+
+      if (!error) {
+        return {
+          data: data as Savant[],
+          count: count || 0,
+          page,
+          pageSize,
+          hasMore: (from + pageSize) < (count || 0)
+        };
+      }
+    }
+
     const all = await this.getSavants();
     let filtered = filterBySearch(all.data, searchTerm);
     filtered = filterByTag(filtered, tag ?? null);
 
-    // Recherche aussi par nom de savant
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       const byName = all.data.filter(s =>
         s.savant?.toLowerCase().includes(term)
       );
-      // Fusionner sans doublons
       const ids = new Set(filtered.map(f => f.id));
       byName.forEach(s => {
         if (!ids.has(s.id)) {
@@ -366,15 +670,38 @@ class DataService {
     };
   }
 
-  getSavantTags(): string[] {
+  async getSavantTags(): Promise<string[]> {
+    if (USE_SUPABASE) {
+      const { data, error } = await supabase
+        .from('savants')
+        .select('tag');
+
+      if (!error && data) {
+        return extractTags(data as { tag?: string }[]);
+      }
+    }
+
     if (!this.cache.savants) {
       this.cache.savants = savantData as Savant[];
     }
     return extractTags(this.cache.savants);
   }
 
-  /** Retourne la liste des noms de savants uniques */
-  getSavantNames(): string[] {
+  async getSavantNames(): Promise<string[]> {
+    if (USE_SUPABASE) {
+      const { data, error } = await supabase
+        .from('savants')
+        .select('savant');
+
+      if (!error && data) {
+        const names = new Set<string>();
+        (data as { savant?: string }[]).forEach(s => {
+          if (s.savant) names.add(s.savant);
+        });
+        return Array.from(names).sort();
+      }
+    }
+
     if (!this.cache.savants) {
       this.cache.savants = savantData as Savant[];
     }
@@ -398,8 +725,11 @@ class DataService {
       savants: null
     };
   }
+
+  isUsingSupabase(): boolean {
+    return USE_SUPABASE;
+  }
 }
 
-// Export singleton instance
 export const dataService = new DataService();
 export default dataService;
