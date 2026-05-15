@@ -13,7 +13,7 @@ import { PrayerTimesPage } from './pages/PrayerTimes';
 import { ThemeProvider } from './context/ThemeContext';
 import { Madhaheb } from './pages/Madhaheb';
 import AlBukhari from './pages/hadith/Al-Bukhari/AlBukhari';
-import part1 from './pages/hadith/Al-Bukhari/part1';
+//import part1 from './pages/hadith/Al-Bukhari/part1';
 
 // Import des écoles
 import {
