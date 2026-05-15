@@ -30,3 +30,6 @@ dist-ssr
 *.sw?
 json_to_sql.py
 .env.local
+
+# Local Netlify folder
+.netlify
