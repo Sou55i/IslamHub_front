@@ -13,6 +13,10 @@ lerna-debug.log*
 ./supabase/*
 node_modules
 
+# Supabase scripts
+supabase/import-data.mjs
+supabase/*.mjs
+
 dist-ssr
 *.local
 
