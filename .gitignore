@@ -8,9 +8,13 @@ pnpm-debug.log*
 lerna-debug.log*
 .env.development
 .env.production
-
+.env.example
 node_modules
-dist
+dist/
+# Supabase scripts
+supabase/import-data.mjs
+supabase/*.mjs
+
 dist-ssr
 *.local
 
@@ -26,3 +30,6 @@ dist-ssr
 *.sw?
 json_to_sql.py
 .env.local
+
+# Local Netlify folder
+.netlify
