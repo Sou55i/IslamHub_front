@@ -176,7 +176,7 @@ export const Dhikrs: React.FC = () => {
                         <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-amber-200 dark:border-emerald-800">
                             <div className="flex items-center gap-2 mb-4">
                                 <Tags className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                                <h3 className="text-lg font-semibold text-emerald-900 dark:text-emerald-300">Tags dans les résultats</h3>
+                                <h3 className="text-lg font-semibold text-emerald-900 dark:text-emerald-300">Mots-clés dans les résultats</h3>
                             </div>
                             <div className="flex flex-wrap gap-2">
                                 {Array.from(tagCounts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 15).map(([tag, count]) => (
@@ -224,12 +224,12 @@ export const Dhikrs: React.FC = () => {
                                 <Filter className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                             </div>
                             <select
-                                aria-label="Filtrer par tag"
+                                aria-label="Filtrer par mot-clé"
                                 className="w-full pl-4 pr-10 py-3 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white appearance-none font-medium cursor-pointer"
                                 value={selectedTag || ''}
                                 onChange={(e) => { setSelectedTag(e.target.value || null); setSelectedCategory(null); }}
                             >
-                                <option value="">🏷️ Tous les tags</option>
+                                <option value="">🏷️ Tous les mots-clés</option>
                                 {allTags.map(tag => (
                                     <option key={tag} value={tag}>
                                         {tag}{tagCounts.get(tag) ? ` (${tagCounts.get(tag)})` : ''}

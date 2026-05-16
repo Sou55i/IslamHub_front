@@ -287,7 +287,7 @@ const TagSelector: React.FC<{
           <div className="flex items-center gap-2">
             <Filter className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             <span className="font-medium">
-            {selectedTag ? `Tag: ${selectedTag}` : 'Filtrer par tag'}
+            {selectedTag ? `Mot-clé: ${selectedTag}` : 'Filtrer par mot-clé'}
           </span>
           </div>
           <ChevronDown className={`h-5 w-5 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
@@ -306,7 +306,7 @@ const TagSelector: React.FC<{
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <input
                         type="text"
-                        placeholder="Rechercher un tag..."
+                        placeholder="Rechercher un mot-clé..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full pl-9 pr-3 py-2 rounded-lg border border-emerald-200 dark:border-emerald-700 bg-gray-50 dark:bg-gray-900 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
@@ -320,8 +320,8 @@ const TagSelector: React.FC<{
                       className={`w-full text-left px-4 py-2 hover:bg-emerald-50 dark:hover:bg-emerald-900/50 transition-colors ${!selectedTag ? 'bg-emerald-100 dark:bg-emerald-900/30 font-medium' : ''}`}
                   >
                     <div className="flex items-center justify-between">
-                      <span>🏷️ Tous les tags</span>
-                      <span className="text-xs text-gray-500">{allTags.length} tags</span>
+                      <span>🏷️ Tous les mots-clés</span>
+                      <span className="text-xs text-gray-500">{allTags.length} mots-clés</span>
                     </div>
                   </button>
 
@@ -344,7 +344,7 @@ const TagSelector: React.FC<{
                       })
                   ) : (
                       <div className="px-4 py-8 text-center text-gray-500">
-                        Aucun tag trouvé pour "{searchQuery}"
+                        Aucun mot-clé trouvé pour "{searchQuery}"
                       </div>
                   )}
                 </div>
@@ -639,7 +639,7 @@ export const Hadiths: React.FC = () => {
                         <> / <span className="font-bold">{totalCount}</span></>
                     )}
                     {' '}résultat{hadiths.length !== 1 ? 's' : ''}
-                    {selectedTag && <> pour le tag <span className="font-bold">{selectedTag}</span></>}
+                    {selectedTag && <> pour le mot-clé <span className="font-bold">{selectedTag}</span></>}
                     {searchTerm && <> pour "<span className="font-bold">{searchTerm}</span>"</>}
                   </p>
                 </div>
@@ -712,7 +712,7 @@ export const Hadiths: React.FC = () => {
                 <input
                     type="text"
                     aria-label="Rechercher un hadith"
-                    placeholder="Rechercher par texte arabe, français, phonétique, tag..."
+                    placeholder="Rechercher par texte arabe, français, phonétique, mot-clé..."
                     className="w-full pl-12 pr-6 py-3 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-lg font-amiri"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
