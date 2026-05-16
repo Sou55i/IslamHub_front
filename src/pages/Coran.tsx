@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, Search, Filter, X, Star, ChevronRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import  coransData from '../data/coran.json';
 
 interface Coran {
@@ -169,75 +168,11 @@ const CoranModal: React.FC<{
 };
 
 export const Corans: React.FC = () => {
-  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [allTags, setAllTags] = useState<string[]>([]);
   const [filteredCorans, setFilteredCorans] = useState<Coran[]>(coransData);
   const [selectedCoran, setSelectedCoran] = useState<Coran | null>(null);
-
-  const topics = [
-    'Sahih Al Bukhari',
-    'Sahih Muslim',
-    'رياض الصالحين',
-    'كتاب ذكر الموت',
-    'الأربعون في التصوف',
-    'المنتقى من صحيح مسلم',
-    'Croyance',
-    'Salat',
-    'Jeûne',
-    'Zakat',
-    'Mariage',
-    'Ventes',
-    'Famille'
-  ];
-
-  const handleTopicClick = (topic: string) => {
-    switch (topic) {
-      case 'Sahih Al Bukhari':
-        navigate('/hadith/albukhari');
-        break;
-      case 'Sahih Muslim':
-        navigate('/hadith/muslim');
-        break;
-      case 'رياض الصالحين':
-        navigate('/hadith/riyadhassalihin');
-        break;
-      case 'كتاب ذكر الموت':
-        navigate('/hadith/dhikralmout');
-        break;
-      case 'الأربعون في التصوف':
-        navigate('/hadith/arbaoune-tasawwuf');
-        break;
-      case 'المنتقى من صحيح مسلم':
-        navigate('/hadith/montaqa-sahihmuslim');
-        break;
-      case 'Croyance':
-        navigate('/hadith/croyance');
-        break;
-      case 'Salat':
-        navigate('/hadith/salat');
-        break;
-      case 'Jeûne':
-        navigate('/hadith/jeune');
-        break;
-      case 'Zakat':
-        navigate('/hadith/zakat');
-        break;
-      case 'Mariage':
-        navigate('/hadith/mariage');
-        break;
-      case 'Ventes':
-        navigate('/hadith/ventes');
-        break;
-      case 'Famille':
-        navigate('/hadith/famille');
-        break;
-      default:
-        console.warn(`Aucune route définie pour le thème : ${topic}`);
-        break;
-    }
-  };
 
   // Extraction des tags uniques
  // Extraction des tags uniques
@@ -308,38 +243,6 @@ useEffect(() => {
       </motion.header>
 
       <main className="container mx-auto px-4 py-12 -mt-12 relative z-10">
-        {/* Navigation rapide */}
-        <motion.section 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="mb-16"
-        >
-          <h2 className="text-2xl font-bold text-emerald-900 dark:text-emerald-300 mb-6 font-amiri text-center">
-            Collections principales
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {topics.map((topic, i) => (
-              <motion.div
-                key={topic}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 + i * 0.05 }}
-                whileHover={{ y: -5 }}
-                className="cursor-pointer bg-white dark:bg-gray-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/50 text-center rounded-xl p-4 shadow-lg border border-emerald-100 dark:border-emerald-800 transition-all"
-                onClick={() => handleTopicClick(topic)}
-              >
-                <div className="bg-emerald-100 dark:bg-emerald-900/50 w-12 h-12 mx-auto rounded-full flex items-center justify-center mb-2">
-                  <BookOpen className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-                </div>
-                <span className="text-sm font-medium text-emerald-800 dark:text-emerald-300">
-                  {topic}
-                </span>
-              </motion.div>
-            ))}
-          </div>
-        </motion.section>
-
         {/* Recherche et filtres */}
         <motion.section
           initial={{ opacity: 0 }}
