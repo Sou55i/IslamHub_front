@@ -98,7 +98,7 @@ export const Madhaheb: React.FC = () => {
                         transition={{ delay: 0.3 }}
                         className="text-emerald-300 max-w-2xl mx-auto font-amiri"
                     >
-                        "La différence entre ma communauté est une miséricorde"
+
                     </motion.p>
                 </div>
             </motion.header>
