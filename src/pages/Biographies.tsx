@@ -12,7 +12,8 @@ export const Biographies: React.FC = () => {
       name: 'Abu Bakr As-Siddiq', 
       title: 'Le Premier Calife', 
       category: 'Compagnon',
-      description: 'Premier calife de l\'Islam et proche compagnon du Prophète (ﷺ)',
+      description: 'Premier calife de l\'Islam et proche compagnon du Prophète (ﷺ). ^Oumar Ibnou l-Khattab a témoigné des mérites du premier des califes :\n' +
+          '« Le Messager de Allah nous avait ordonné un jour de donner des aumônes et cela avait coïncidé avec de l’argent que je possédais. Je me suis dit : “Aujourd’hui je vais surpasser Abou Bakr en générosité, s’il se peut que je le surpasse un jour.” J’ai ramené la moitié de mes biens,  le Messager de Allah m’a dit : ما أبقيت لأهلك ؟ (Ma ‘abqayta li ‘ahlik ?) ce qui signifie : “Qu’as-tu laissé pour ta famille ?” Je lui ai répondu : “La même chose que ce que je donne là.” Abou Bakr a alors ramené tout ce qu’il possédait. Le Messager de Allah lui a dit : ما أبقيت لأهلك ؟  (Ma ‘abqayta li ‘ahlik ?) ce qui signifie : “Qu’as-tu laissé pour ta famille ?” Il a répondu : “Je me fie à Allah.” J’ai dit : “je ne pourrai vraiment jamais faire mieux que lui !” » Rapporté par At-Tirmidhiyy.',
       tags: 'Calife,Sahabi,Leadership'
     },
     { 
@@ -20,11 +21,38 @@ export const Biographies: React.FC = () => {
       name: 'Umar ibn Al-Khattab', 
       title: 'Le Second Calife', 
       category: 'Compagnon',
-      description: 'Connu pour sa justice et son expansion de l\'état islamique',
+      description: 'Parmi ses mérites : il est le premier à avoir mis en place la datation pour compter les années lunaires. C’est lui qui a donc instauré le calendrier de l’Hégire. Il est le premier à avoir rassemblé les gens pour accomplir la prière du qiyam Ramadan (prières surérogatoires) derrière un seul imam, alors qu’auparavant on ne l’accomplissait pas en assemblée. Il a dit à ce sujet :\n' +
+          '\n' +
+          '   نِعْمَتِ الْبِدْعَةُ هذه\n' +
+          '\n' +
+          '(ni^mati l-bid^atou hadhihi) ce qui signifie : « Qu’elle est bénéfique cette innovation ! » Il est également le premier à avoir fait des inspections de nuit pour veiller sur les musulmans. Il veillait à ce que les gens douteux ne leur nuisent pas. Il est aussi le premier à avoir été surnommé Emir des croyants.',
+      tags: 'Calife,Sahabi,Justice'
+    },
+    {
+      id: 3,
+      name: '^Outhman ibnou ^Affan',
+      title: 'Le troisième Calife',
+      category: 'Compagnon',
+      description: '^Outhman ibnou ^Affan est le troisième calife. Il fait partie des premiers convertis à l’Islam. Il a été surnommé “l’homme aux deux lumières” (Dhou n-Nourayn) car il a épousé successivement deux des filles du Messager de Allah .\n' +
+          'Il a été rapporté à son sujet, que Allah l’agrée, qu’il donnait aux gens à manger la nourriture qui lui était destinée en tant qu’Emir des croyants et qu’il rentrait chez lui pour manger du pain accompagné d’huile. Ceci est une preuve de son détachement de la vie d’ici-bas.',
+      tags: 'Calife,Sahabi,Justice'
+    },
+    {
+      id: 4,
+      name: 'Ali Ibn Abi Talib',
+      title: 'Le quatrième Calife',
+      category: 'Compagnon',
+      description: 'Il est notre maître le père de Al-Haçan et de Al-Houçayn, ^Aliyy fils de Abou Talib. Il est le fils de l’oncle paternel du Messager de Allah et le gendre du Prophète car le Prophète  l’avait marié avec sa fille Fatimah. Il était le premier des enfants à être entré en Islam.\n' +
+          'Il était le plus savant des compagnons. En effet, le Messager de Allah dit :\n' +
+          '\n' +
+          ' أَنَا مَدِينَةُ العِلْمِ وَ عَلِيٌ بَابُهَا\n' +
+          '\n' +
+          '(Ana madinatou l-^ilmi wa ^Aliyyoun babouha) ce qui signifie : « Je suis comme une ville de la science, et ^Aliyy en serait la porte. » Ce hadith est rapporté par al-Hakim dans son livre al-Moustadrak.\n' +
+          'Que Allah les agrée tous et nous accorde des bénédictions par leurs degrés. Les compagnons ont pris le relais dans la diffusion de la science. Ils ont poursuivi l’appel à l’Islam à travers le monde.',
       tags: 'Calife,Sahabi,Justice'
     },
     { 
-      id: 3,
+      id: 5,
       name: 'Aisha bint Abi Bakr', 
       title: 'Mère des Croyants', 
       category: 'Famille Prophétique',
@@ -32,27 +60,20 @@ export const Biographies: React.FC = () => {
       tags: 'Hadith,Femmes,Sahabiya'
     },
     { 
-      id: 4,
+      id: 6,
       name: 'Imam Al-Bukhari', 
       title: 'Maître du Hadith', 
       category: 'Savant',
       description: 'Compilateur du Sahih al-Bukhari, la plus authentique collection de hadiths',
       tags: 'Hadith,Muhaddith,Fiqh'
     },
+
     { 
-      id: 5,
-      name: 'Ali Ibn Abi Talib', 
-      title: 'Le quatrième Calife', 
+      id: 7,
+      name: 'Fatimah Az-Zahra',
+      title: 'fille du Messager de Allah salla l-Lahou ^alayhi wasallam',
       category: 'Compagnon',
-      description: 'Cousin et gendre du Prophète, le plus savant des compagnons',
-      tags: 'Calife,Sahabi,Justice'
-    },
-    { 
-      id: 6,
-      name: 'Fatima al-Fihri', 
-      title: 'Fondatrice de la Qarawiyyin', 
-      category: 'Femmes Savantes',
-      description: 'Fondatrice de la première université au monde à Fès',
+      description: 'Fatimah, fille du Messager de Allah salla l-Lahou ^alayhi wasallam, est la meilleure des femmes de l’humanité de son époque.',
       tags: 'Education,Femmes,Histoire'
     }
   ];
