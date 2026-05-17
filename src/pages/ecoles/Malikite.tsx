@@ -1,7 +1,60 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { BookOpen, Users, Star, ChevronRight, Scale, GraduationCap, Globe, Building, Heart } from 'lucide-react';
+import { BookOpen, Users, Star, ChevronRight, Scale, GraduationCap, Globe, Building, Heart, ChevronDown, ChevronUp, Shield, Sparkles, Calendar, BookMarked } from 'lucide-react';
+
+interface SectionProps {
+    title: string;
+    icon: React.ReactNode;
+    children: React.ReactNode;
+    defaultOpen?: boolean;
+}
+
+const CollapsibleSection: React.FC<SectionProps> = ({ title, icon, children, defaultOpen = false }) => {
+    const [isOpen, setIsOpen] = useState(defaultOpen);
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-amber-200 dark:border-emerald-800"
+        >
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="w-full px-6 py-4 flex items-center justify-between bg-gradient-to-r from-amber-50 to-emerald-50 dark:from-emerald-900/30 dark:to-amber-900/30 hover:from-amber-100 hover:to-emerald-100 dark:hover:from-emerald-900/50 dark:hover:to-amber-900/50 transition-colors"
+            >
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-emerald-500 flex items-center justify-center text-white">
+                        {icon}
+                    </div>
+                    <h3 className="text-xl font-bold text-emerald-800 dark:text-emerald-200 font-amiri">
+                        {title}
+                    </h3>
+                </div>
+                {isOpen ? (
+                    <ChevronUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                ) : (
+                    <ChevronDown className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                )}
+            </button>
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="overflow-hidden"
+                    >
+                        <div className="p-6 text-gray-700 dark:text-gray-300 leading-relaxed">
+                            {children}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </motion.div>
+    );
+};
 
 const Malikite: React.FC = () => {
     const stats = [
@@ -150,65 +203,147 @@ const Malikite: React.FC = () => {
                     ))}
                 </motion.section>
 
-                {/* Section d'introduction */}
+                {/* Sections biographiques collapsibles */}
                 <motion.section
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.4 }}
-                    className="mb-16"
+                    className="space-y-4 mb-16"
                 >
-                    <h2 className="text-3xl font-bold text-emerald-900 dark:text-emerald-300 mb-6 font-amiri text-center">
-                        L'École Malikite
-                    </h2>
-                    <div className="max-w-4xl mx-auto">
-                        <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
-                            L'école malikite est la deuxième plus ancienne des quatre écoles juridiques sunnites.
-                            Fondée par l'Imam Malik ibn Anas (711-795 EC) à Médine, elle est réputée pour son
-                            attachement à la pratique (Amal) des habitants de Médine, considérée comme une source
-                            vivante de la Sunna du Prophète (paix et bénédictions sur lui).
+                    <CollapsibleSection
+                        title="Son Nom et sa Naissance"
+                        icon={<Calendar className="w-5 h-5" />}
+                        defaultOpen={true}
+                    >
+                        <p className="mb-4">
+                            L'Imam Malik, que Allah l'agrée, est né en 93 de l'Hégire, dans la ville de Médine l'Illuminée (Al-Madinatou l-mounawwarah). Son nom est Malik fils de Anas fils de Malik fils de Abi ^Amir Al-'Asbahiyy. Son école de jurisprudence est connue sous le nom de l'école malikite (Al-Madhhabou l-Malikiyy).
                         </p>
-                        <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
-                            L'œuvre majeure de l'Imam Malik, "Al-Muwatta" (La Voie Aplanic), est l'un des premiers
-                            recueils de hadiths et de jurisprudence islamique. Elle reste une référence fondamentale
-                            dans l'étude du droit islamique. L'école malikite accorde une importance particulière
-                            à la pratique continue des musulmans de Médine comme preuve juridique.
+                        <p className="mb-4">
+                            Il est le deuxième des quatre grands Imams moujtahid, ce sont ceux qui ont mis au point une méthodologie d'extraction des lois à partir des textes, pour eux-mêmes et pour ceux qui les suivent. Leur méthodologie a un fondement et des règles et elle s'est transmise aux gens par tawatour – c'est-à-dire par un grand nombre de personnes – de sorte que toute altération en est exclue.
                         </p>
-                        <div className="h-1 w-24 mx-auto bg-gradient-to-r from-amber-400 to-emerald-500 rounded-full mt-6"></div>
-                    </div>
-                </motion.section>
+                    </CollapsibleSection>
 
-                {/* Section sur l'Imam Malik */}
-                <motion.section
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 }}
-                    className="mb-16 bg-gradient-to-r from-amber-100 to-emerald-100 dark:from-emerald-900/30 dark:to-amber-900/30 rounded-2xl p-8 shadow-lg"
-                >
-                    <div className="flex flex-col md:flex-row gap-8 items-center">
-                        <div className="flex-1 text-center md:text-left">
-                            <h3 className="text-2xl font-bold text-emerald-900 dark:text-emerald-300 mb-4 font-amiri">
-                                Imam Malik ibn Anas
-                            </h3>
-                            <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
-                                Né à Médine en 711 EC, l'Imam Malik a grandi dans la cité du Prophète,
-                                ce qui lui a permis d'être témoin des pratiques vivantes des musulmans
-                                de Médine, transmises de génération en génération.
-                            </p>
-                            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                                Son œuvre "Al-Muwatta" contient environ 1 720 hadiths et traditions.
-                                L'imam Al-Shafi'i, fondateur de l'école shafi'ite, fut l'un de ses
-                                élèves les plus célèbres. L'école malikite est prédominante en Afrique
-                                du Nord et en Afrique de l'Ouest.
-                            </p>
-                        </div>
-                        <div className="flex-1 text-center">
-                            <div className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-gradient-to-br from-amber-400 to-emerald-500 p-1">
-                                <div className="w-full h-full rounded-full bg-emerald-900 dark:bg-emerald-950 flex items-center justify-center">
-                                    <BookOpen className="h-12 w-12 text-white" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <CollapsibleSection
+                        title="Son Apprentissage de la Science"
+                        icon={<BookOpen className="w-5 h-5" />}
+                    >
+                        <p className="mb-4">
+                            L'Imam Malik a grandi dans un foyer de science et de piété, il a suivi la voie de ses ancêtres, que Allah les agrée tous, il a pris la science de nombreux chouyoukh. Le premier d'entre eux fut Ar-Rabii^ah Ibnou ^Abdi r-Rahman, qui est connu sous le nom de Rabii^atou r-Ra'y.
+                        </p>
+                        <p className="mb-4">
+                            L'Imam Malik a également appris la science auprès de Nafi^ l'esclave affranchi de ^Abdou l-Lah Ibnou ^Oumar et auprès de Ibnou Chihab Az-Zouhriyy, qui fut parmi les plus grands mémorisateurs du hadith.
+                        </p>
+                    </CollapsibleSection>
+
+                    <CollapsibleSection
+                        title="Al-Mouwatta'"
+                        icon={<BookMarked className="w-5 h-5" />}
+                    >
+                        <p className="mb-4">
+                            Le livre Al-Mouwatta' (Le Livre rendu facile) de l'Imam Malik est un des ouvrages de référence dans la jurisprudence et le hadith. L'Imam Ach-Chafi^iyy a dit à propos de ce livre :
+                        </p>
+                        <p className="mb-4 text-right font-amiri text-xl leading-loose">
+                            (مَا عَلَى وَجْهِ الأرضِ كِتَابٌ بَعْدَ كِتَابِ اللهِ أَكْثَرَ صَوَابًا مِنَ المُوَطَّإِ)
+                        </p>
+                        <p className="mb-4 italic">
+                            (ma ^ala wajhi l-'ardi kitaboun ba^da kitabi l-Lahi 'aktharou sawaban mina l-Mouwatta')
+                        </p>
+                        <p className="mb-6">
+                            « Il n'y a pas sur terre après le Livre de Allah de livre plus juste que Al-Mouwatta'. »
+                        </p>
+                        <p className="mb-4">
+                            C'est-à-dire que Al-Mouwatta' de l'Imam Malik est le meilleur livre de jurisprudence et de hadith après le Qour'an honoré, du vivant de l'Imam Ach-Chafi^iyy qui disait cela à cette époque.
+                        </p>
+                    </CollapsibleSection>
+
+                    <CollapsibleSection
+                        title="Paroles de Savants à son Sujet"
+                        icon={<Star className="w-5 h-5" />}
+                    >
+                        <p className="mb-4">
+                            L'Imam Ach-Chafi^iyy a dit au sujet de l'Imam Malik :
+                        </p>
+                        <p className="mb-4 text-right font-amiri text-xl leading-loose">
+                            (إِذَا جَاءَ الأَثَرُ فَمَالِكٌ النَّجْمُ)
+                        </p>
+                        <p className="mb-4 italic">
+                            ('idha ja'a l-'atharou fa-Malikoun an-najm)
+                        </p>
+                        <p className="mb-6">
+                            « Lorsqu'il s'agit de hadith, Malik est l'étoile. »
+                        </p>
+
+                        <p className="mb-4">
+                            L'Imam Ach-Chafi^iyy a dit également :
+                        </p>
+                        <p className="mb-4 text-right font-amiri text-xl leading-loose">
+                            (مَالِكٌ مُعَلِّمِي)
+                        </p>
+                        <p className="mb-4 italic">
+                            (Malikoun mou^allimi)
+                        </p>
+                        <p className="mb-6">
+                            « Malik est mon enseignant. »
+                        </p>
+
+                        <p className="mb-4">
+                            L'Imam Malik était très respecté par les savants de son époque et ceux qui l'ont suivi. Il était réputé pour sa piété, son attachement à la Sunna et sa connaissance approfondie de la pratique des gens de Médine.
+                        </p>
+                    </CollapsibleSection>
+
+                    <CollapsibleSection
+                        title="Son Décès"
+                        icon={<Heart className="w-5 h-5" />}
+                    >
+                        <p className="mb-4">
+                            L'Imam Malik est décédé en 179 de l'Hégire, à l'âge de 86 ans. Il fut enterré dans le cimetière de Al-Baqi^ à Médine, que Allah l'agrée et qu'Il illumine sa tombe.
+                        </p>
+                    </CollapsibleSection>
+
+                    <CollapsibleSection
+                        title="Sa Croyance en Allah"
+                        icon={<Shield className="w-5 h-5" />}
+                    >
+                        <p className="mb-4">
+                            L'Imam Malik, que Allah l'agrée, a confirmé dans sa croyance que Allah ta^ala existe sans endroit et sans direction. Il a enseigné que Allah n'est pas un corps et qu'Il ne ressemble à aucune de Ses créatures. Il est rapporté de sa part :
+                        </p>
+                        <p className="mb-4 text-right font-amiri text-xl leading-loose">
+                            (اللهُ فِي السَّمَاءِ وعِلْمُهُ فِي كُلِّ مَكَانٍ)
+                        </p>
+                        <p className="mb-4 italic">
+                            (Allahou fi s-sama'i wa ^ilmouhou fi koulli makan)
+                        </p>
+                        <p className="mb-6">
+                            « Allah est au ciel et Son savoir englobe tout endroit. »
+                        </p>
+                        <p className="mb-4">
+                            Cette parole signifie que Allah a un haut degré et non pas qu'Il serait dans le ciel en tant qu'endroit. Car l'Imam Malik fait partie de ceux qui ont dit :
+                        </p>
+                        <p className="mb-4 text-right font-amiri text-xl leading-loose">
+                            (الاسْتِوَاءُ مَعْلُومٌ وَالكَيْفُ غَيْرُ مَعْقُولٍ)
+                        </p>
+                        <p className="mb-4 italic">
+                            (al-istiwa'ou ma^loum wa l-kayfou ghayrou ma^qoul)
+                        </p>
+                        <p className="mb-6">
+                            « Le sens du mot istiwa' est connu [dans la langue arabe] et le comment [c'est-à-dire le comment qui est l'attribut des créatures] est impossible [au sujet de Allah]. »
+                        </p>
+                        <p className="mb-4">
+                            Ce qui signifie que Allah est exempt d'être assis sur le Trône ou d'être établi dessus ou d'y être installé ou du comment de façon absolue, car le comment c'est l'attribut des créatures, c'est tout ce qui a une quantité, une dimension, une mesure, une forme, un aspect, or Allah est exempt de tout cela.
+                        </p>
+                    </CollapsibleSection>
+
+                    <CollapsibleSection
+                        title="La Pratique des Gens de Médine"
+                        icon={<Sparkles className="w-5 h-5" />}
+                    >
+                        <p className="mb-4">
+                            L'une des particularités de l'école de l'Imam Malik est l'importance accordée à la pratique des gens de Médine (^Amal 'Ahli l-Madinah). L'Imam Malik considérait que la pratique continue et transmise des habitants de Médine constituait une preuve juridique forte, car Médine est la ville où le Prophète (Salla l-Lahou ^alayhi wa sallam) a vécu et où ses compagnons ont transmis ses enseignements.
+                        </p>
+                        <p className="mb-4">
+                            Cette pratique se transmettait de génération en génération, des compagnons aux successeurs (tabi^oun), puis aux savants qui les ont suivis. L'Imam Malik voyait dans cette transmission continue une garantie de l'authenticité des pratiques religieuses.
+                        </p>
+                    </CollapsibleSection>
                 </motion.section>
 
                 {/* Section des sources */}
@@ -275,35 +410,6 @@ const Malikite: React.FC = () => {
                                 en Afrique de l'Ouest (Sénégal, Mali, Niger, Nigeria), au Soudan, au Koweït,
                                 à Bahreïn et aux Émirats arabes unis.
                             </p>
-                        </div>
-                    </div>
-                </motion.section>
-
-                {/* Al-Muwatta section */}
-                <motion.section
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.85 }}
-                    className="mb-16"
-                >
-                    <div className="bg-gradient-to-r from-emerald-50 to-amber-50 dark:from-gray-800 dark:to-emerald-900/30 rounded-2xl p-6 shadow-lg border border-amber-200 dark:border-emerald-800">
-                        <div className="flex flex-col md:flex-row items-center gap-6">
-                            <div className="flex-1 text-center md:text-left">
-                                <h3 className="text-2xl font-bold text-emerald-900 dark:text-emerald-300 mb-3 font-amiri">
-                                    Al-Muwatta'
-                                </h3>
-                                <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                                    "Al-Muwatta" (La Voie Aplanic) est considéré par de nombreux savants comme
-                                    le premier ouvrage authentique de hadiths et de jurisprudence islamique.
-                                    L'Imam Malik y a compilé les pratiques, les enseignements et les jugements
-                                    qui étaient suivis à Médine, en s'assurant de leur authenticité.
-                                </p>
-                            </div>
-                            <div className="text-center">
-                                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-amber-100 dark:bg-emerald-800">
-                                    <Star className="h-10 w-10 text-amber-600 dark:text-emerald-400" />
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </motion.section>
