@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { BookOpen, ChevronRight, Clock, Sun, Moon, Sunrise, Sunset, Book, Heart, Wind, Users, GraduationCap, Video, ScrollText } from 'lucide-react';
+import { BookOpen, ChevronRight, Clock, Sun, Moon, Sunrise, Sunset, Book, Heart, Wind, Users, GraduationCap, Video, ScrollText, Loader2 } from 'lucide-react';
 import { PrayerTimes } from '../components/PrayerTimes';
 import { DailyQuote } from '../components/DailyQuote';
+import { dataService } from '../services/DataService';
+import type { Hadith, Douaa, Coran } from '../types';
 
 const mockPrayerTimes = {
   fajr: "05:30",
@@ -20,125 +22,14 @@ const mockQuote = {
   source: "Sahih Al-Bukhari"
 };
 
-// Hadiths du jour (rotation basée sur le jour)
-const dailyHadiths = [
-  {
-    text: "Les actes ne valent que par les intentions, et chaque homme n'aura que selon son intention.",
-    source: "Sahih Al-Bukhari",
-    narrator: "Omar ibn Al-Khattab"
-  },
-  {
-    text: "Le meilleur d'entre vous est celui qui apprend le Coran et l'enseigne.",
-    source: "Sahih Al-Bukhari",
-    narrator: "Othman ibn Affan"
-  },
-  {
-    text: "Celui qui croit en Allah et au Jour dernier, qu'il dise du bien ou qu'il se taise.",
-    source: "Sahih Al-Bukhari & Muslim",
-    narrator: "Abou Hourayra"
-  },
-  {
-    text: "La religion est facilité. Nul ne cherche à rivaliser avec la religion sans qu'elle ne le vainque.",
-    source: "Sahih Al-Bukhari",
-    narrator: "Abou Hourayra"
-  },
-  {
-    text: "Fait partie de la beauté de l'Islam de la personne de délaisser ce qui ne la concerne pas.",
-    source: "At-Tirmidhi",
-    narrator: "Abou Hourayra"
-  },
-  {
-    text: "N'entrera pas au Paradis celui dont le voisin n'est pas à l'abri de ses méfaits.",
-    source: "Sahih Muslim",
-    narrator: "Abou Hourayra"
-  },
-  {
-    text: "Aucun de vous ne sera véritablement croyant tant qu'il n'aimera pas pour son frère ce qu'il aime pour lui-même.",
-    source: "Sahih Al-Bukhari & Muslim",
-    narrator: "Anas ibn Malik"
-  }
-];
-
-// Douaas selon le moment de la journée
-const douaasByTime = {
-  morning: {
-    title: "Doua du matin",
-    arabic: "أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ وَالْحَمْدُ لِلَّهِ",
-    transliteration: "Asbahna wa asbahal-mulku lillah, walhamdu lillah",
-    translation: "Nous voilà au matin et le royaume appartient à Allah, et la louange est à Allah.",
-    source: "Sahih Muslim"
-  },
-  afternoon: {
-    title: "Doua de protection",
-    arabic: "بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ",
-    transliteration: "Bismillahil-ladhi la yadurru ma'asmihi shay'un fil-ardi wa la fis-sama'",
-    translation: "Au nom d'Allah, avec le nom de Qui rien sur terre ni dans le ciel ne peut nuire.",
-    source: "At-Tirmidhi"
-  },
-  evening: {
-    title: "Doua du soir",
-    arabic: "أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ وَالْحَمْدُ لِلَّهِ",
-    transliteration: "Amsayna wa amsal-mulku lillah, walhamdu lillah",
-    translation: "Nous voilà au soir et le royaume appartient à Allah, et la louange est à Allah.",
-    source: "Sahih Muslim"
-  },
-  night: {
-    title: "Doua avant de dormir",
-    arabic: "بِاسْمِكَ اللَّهُمَّ أَمُوتُ وَأَحْيَا",
-    transliteration: "Bismika Allahumma amutu wa ahya",
-    translation: "C'est en Ton nom, ô Allah, que je meurs et que je vis.",
-    source: "Sahih Al-Bukhari"
-  }
-};
-
-// Versets à méditer
-const dailyVerses = [
-  {
-    arabic: "إِنَّ اللَّهَ مَعَ الصَّابِرِينَ",
-    translation: "Certes, Allah est avec les patients.",
-    reference: "Sourate Al-Baqara, 153"
-  },
-  {
-    arabic: "وَمَن يَتَوَكَّلْ عَلَى اللَّهِ فَهُوَ حَسْبُهُ",
-    translation: "Et quiconque place sa confiance en Allah, Il lui suffit.",
-    reference: "Sourate At-Talaq, 3"
-  },
-  {
-    arabic: "فَإِنَّ مَعَ الْعُسْرِ يُسْرًا",
-    translation: "Car certes, avec la difficulté il y a une facilité.",
-    reference: "Sourate Ash-Sharh, 5"
-  },
-  {
-    arabic: "وَاذْكُر رَّبَّكَ فِي نَفْسِكَ تَضَرُّعًا وَخِيفَةً",
-    translation: "Et invoque ton Seigneur en toi-même, avec humilité et crainte.",
-    reference: "Sourate Al-A'raf, 205"
-  },
-  {
-    arabic: "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً",
-    translation: "Seigneur! Accorde-nous une belle part ici-bas, et une belle part dans l'au-delà.",
-    reference: "Sourate Al-Baqara, 201"
-  },
-  {
-    arabic: "وَقُل رَّبِّ زِدْنِي عِلْمًا",
-    translation: "Et dis: Seigneur, augmente mes connaissances.",
-    reference: "Sourate Ta-Ha, 114"
-  },
-  {
-    arabic: "إِنَّ رَحْمَتَ اللَّهِ قَرِيبٌ مِّنَ الْمُحْسِنِينَ",
-    translation: "La miséricorde d'Allah est proche des bienfaisants.",
-    reference: "Sourate Al-A'raf, 56"
-  }
-];
-
-// Statistiques du site
-const siteStats = [
-  { label: 'Hadiths', value: '500+', icon: Book, color: 'from-emerald-500 to-teal-500', path: '/hadiths' },
-  { label: 'Savants', value: '50+', icon: GraduationCap, color: 'from-blue-500 to-indigo-500', path: '/savants' },
-  { label: 'Douaas', value: '100+', icon: Heart, color: 'from-rose-500 to-pink-500', path: '/douaas' },
-  { label: 'Dhikrs', value: '80+', icon: Wind, color: 'from-cyan-500 to-blue-500', path: '/dhikrs' },
-  { label: 'Vidéos', value: '200+', icon: Video, color: 'from-purple-500 to-violet-500', path: '/multimedia' },
-  { label: 'Biographies', value: '40+', icon: ScrollText, color: 'from-amber-500 to-orange-500', path: '/biographies' },
-];
+interface SiteStats {
+  hadiths: number;
+  savants: number;
+  douaas: number;
+  dhikrs: number;
+  videos: number;
+  coran: number;
+}
 
 const getTimeOfDay = (): 'morning' | 'afternoon' | 'evening' | 'night' => {
   const hour = new Date().getHours();
@@ -158,24 +49,92 @@ const getTimeIcon = (time: string) => {
   }
 };
 
+const getTimeLabel = (time: string): string => {
+  switch (time) {
+    case 'morning': return 'Doua du matin';
+    case 'afternoon': return 'Doua de l\'après-midi';
+    case 'evening': return 'Doua du soir';
+    case 'night': return 'Doua de la nuit';
+    default: return 'Doua du jour';
+  }
+};
+
+const getRandomItem = <T,>(items: T[]): T | null => {
+  if (!items || items.length === 0) return null;
+  const randomIndex = Math.floor(Math.random() * items.length);
+  return items[randomIndex];
+};
+
+const getDailyItem = <T,>(items: T[]): T | null => {
+  if (!items || items.length === 0) return null;
+  const today = new Date();
+  const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+  const index = dayOfYear % items.length;
+  return items[index];
+};
+
 export const Home: React.FC = () => {
   const [selectedCity] = useState("Paris");
-  const [timeOfDay, setTimeOfDay] = useState<'morning' | 'afternoon' | 'evening' | 'night'>('morning');
-  const [dayIndex, setDayIndex] = useState(0);
+  const [timeOfDay] = useState<'morning' | 'afternoon' | 'evening' | 'night'>(getTimeOfDay());
+
+  const [stats, setStats] = useState<SiteStats>({
+    hadiths: 0,
+    savants: 0,
+    douaas: 0,
+    dhikrs: 0,
+    videos: 0,
+    coran: 0
+  });
+
+  const [dailyHadith, setDailyHadith] = useState<Hadith | null>(null);
+  const [dailyDouaa, setDailyDouaa] = useState<Douaa | null>(null);
+  const [dailyVerse, setDailyVerse] = useState<Coran | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setTimeOfDay(getTimeOfDay());
-    // Index basé sur le jour de l'année pour la rotation du contenu
-    const now = new Date();
-    const start = new Date(now.getFullYear(), 0, 0);
-    const diff = now.getTime() - start.getTime();
-    const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
-    setDayIndex(dayOfYear % 7);
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const [hadithsRes, savantsRes, douaasRes, dhikrsRes, multimediaRes, coranRes] = await Promise.all([
+          dataService.getHadiths({ page: 0, pageSize: 1000 }),
+          dataService.getSavants({ page: 0, pageSize: 1000 }),
+          dataService.getDouaas({ page: 0, pageSize: 1000 }),
+          dataService.getDhikrs({ page: 0, pageSize: 1000 }),
+          dataService.getMultimedia({ page: 0, pageSize: 1 }),
+          dataService.getCoran({ page: 0, pageSize: 1000 })
+        ]);
+
+        setStats({
+          hadiths: hadithsRes.count,
+          savants: savantsRes.count,
+          douaas: douaasRes.count,
+          dhikrs: dhikrsRes.count,
+          videos: multimediaRes.count,
+          coran: coranRes.count
+        });
+
+        setDailyHadith(getDailyItem(hadithsRes.data));
+        setDailyDouaa(getRandomItem(douaasRes.data));
+        setDailyVerse(getDailyItem(coranRes.data));
+
+      } catch (error) {
+        console.error('Error fetching home data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
-  const currentHadith = dailyHadiths[dayIndex];
-  const currentDouaa = douaasByTime[timeOfDay];
-  const currentVerse = dailyVerses[dayIndex];
+  const siteStatsConfig = [
+    { label: 'Hadiths', value: stats.hadiths, icon: Book, color: 'from-emerald-500 to-teal-500', path: '/hadiths' },
+    { label: 'Savants', value: stats.savants, icon: GraduationCap, color: 'from-blue-500 to-indigo-500', path: '/savants' },
+    { label: 'Douaas', value: stats.douaas, icon: Heart, color: 'from-rose-500 to-pink-500', path: '/douaas' },
+    { label: 'Dhikrs', value: stats.dhikrs, icon: Wind, color: 'from-cyan-500 to-blue-500', path: '/dhikrs' },
+    { label: 'Vidéos', value: stats.videos, icon: Video, color: 'from-purple-500 to-violet-500', path: '/multimedia' },
+    { label: 'Versets', value: stats.coran, icon: BookOpen, color: 'from-amber-500 to-orange-500', path: '/coran' },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-emerald-50 dark:from-gray-900 dark:to-emerald-950">
@@ -262,130 +221,178 @@ export const Home: React.FC = () => {
             Votre dose quotidienne de spiritualité
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Hadith du jour */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-              whileHover={{ y: -5 }}
-              className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-amber-200 dark:border-emerald-800 overflow-hidden group"
-            >
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
-              <div className="p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white shadow-lg">
-                    <Book className="w-6 h-6" />
+          {isLoading ? (
+            <div className="flex justify-center items-center py-20">
+              <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Hadith du jour */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                whileHover={{ y: -5 }}
+                className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-amber-200 dark:border-emerald-800 overflow-hidden group"
+              >
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
+                <div className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white shadow-lg">
+                      <Book className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-emerald-800 dark:text-emerald-300 font-amiri">
+                        Hadith du jour
+                      </h3>
+                      {dailyHadith?.narrateur && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          Rapporté par {dailyHadith.narrateur}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-emerald-800 dark:text-emerald-300 font-amiri">
-                      Hadith du jour
-                    </h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Rapporté par {currentHadith.narrator}
+
+                  {dailyHadith ? (
+                    <>
+                      {dailyHadith.texte_arabe && (
+                        <p className="text-lg text-right font-amiri text-gray-800 dark:text-gray-200 mb-3 leading-loose line-clamp-3">
+                          {dailyHadith.texte_arabe.substring(0, 200)}...
+                        </p>
+                      )}
+                      {dailyHadith.texte_francais && (
+                        <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4 italic line-clamp-3">
+                          "{dailyHadith.texte_francais}"
+                        </p>
+                      )}
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1 rounded-full">
+                          {dailyHadith.rapporteur || dailyHadith.sujet}
+                        </span>
+                        <Link to="/hadiths" className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
+                          <ChevronRight className="w-5 h-5" />
+                        </Link>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+                      Aucun hadith disponible
                     </p>
-                  </div>
+                  )}
                 </div>
+              </motion.div>
 
-                <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4 italic">
-                  "{currentHadith.text}"
-                </p>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1 rounded-full">
-                    {currentHadith.source}
-                  </span>
-                  <Link to="/hadiths" className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
-                    <ChevronRight className="w-5 h-5" />
-                  </Link>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Doua du moment */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7 }}
-              whileHover={{ y: -5 }}
-              className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-amber-200 dark:border-emerald-800 overflow-hidden group"
-            >
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 to-pink-500" />
-              <div className="p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-500 to-pink-500 flex items-center justify-center text-white shadow-lg">
-                    {getTimeIcon(timeOfDay)}
+              {/* Doua du moment */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+                whileHover={{ y: -5 }}
+                className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-amber-200 dark:border-emerald-800 overflow-hidden group"
+              >
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 to-pink-500" />
+                <div className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-500 to-pink-500 flex items-center justify-center text-white shadow-lg">
+                      {getTimeIcon(timeOfDay)}
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-rose-800 dark:text-rose-300 font-amiri">
+                        {getTimeLabel(timeOfDay)}
+                      </h3>
+                      {dailyDouaa?.sujet && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {dailyDouaa.sujet}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-rose-800 dark:text-rose-300 font-amiri">
-                      {currentDouaa.title}
-                    </h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {currentDouaa.source}
+
+                  {dailyDouaa ? (
+                    <>
+                      <p className="text-xl text-right font-amiri text-gray-800 dark:text-gray-200 mb-3 leading-loose">
+                        {dailyDouaa.texte_arabe}
+                      </p>
+
+                      {dailyDouaa.phonétique && (
+                        <p className="text-sm text-gray-600 dark:text-gray-400 italic mb-2">
+                          {dailyDouaa.phonétique}
+                        </p>
+                      )}
+
+                      {dailyDouaa.texte_francais && (
+                        <p className="text-sm text-gray-700 dark:text-gray-300 mb-4 line-clamp-2">
+                          {dailyDouaa.texte_francais}
+                        </p>
+                      )}
+
+                      <div className="flex justify-end">
+                        <Link to="/douaas" className="text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 transition-colors">
+                          <ChevronRight className="w-5 h-5" />
+                        </Link>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+                      Aucune doua disponible
                     </p>
-                  </div>
+                  )}
                 </div>
+              </motion.div>
 
-                <p className="text-2xl text-right font-amiri text-gray-800 dark:text-gray-200 mb-3 leading-loose">
-                  {currentDouaa.arabic}
-                </p>
-
-                <p className="text-sm text-gray-600 dark:text-gray-400 italic mb-2">
-                  {currentDouaa.transliteration}
-                </p>
-
-                <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
-                  {currentDouaa.translation}
-                </p>
-
-                <div className="flex justify-end">
-                  <Link to="/douaas" className="text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 transition-colors">
-                    <ChevronRight className="w-5 h-5" />
-                  </Link>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Verset à méditer */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8 }}
-              whileHover={{ y: -5 }}
-              className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-amber-200 dark:border-emerald-800 overflow-hidden group"
-            >
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-500" />
-              <div className="p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white shadow-lg">
-                    <BookOpen className="w-6 h-6" />
+              {/* Verset à méditer */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8 }}
+                whileHover={{ y: -5 }}
+                className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-amber-200 dark:border-emerald-800 overflow-hidden group"
+              >
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-500" />
+                <div className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white shadow-lg">
+                      <BookOpen className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-amber-800 dark:text-amber-300 font-amiri">
+                        Verset à méditer
+                      </h3>
+                      {dailyVerse?.sourate && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {dailyVerse.sourate}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-amber-800 dark:text-amber-300 font-amiri">
-                      Verset à méditer
-                    </h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {currentVerse.reference}
+
+                  {dailyVerse ? (
+                    <>
+                      <p className="text-xl text-right font-amiri text-gray-800 dark:text-gray-200 mb-4 leading-loose">
+                        {dailyVerse.texte_arabe}
+                      </p>
+
+                      {dailyVerse.texte_francais && (
+                        <p className="text-gray-700 dark:text-gray-300 italic mb-4 line-clamp-3">
+                          "{dailyVerse.texte_francais}"
+                        </p>
+                      )}
+
+                      <div className="flex justify-end">
+                        <Link to="/coran" className="text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors">
+                          <ChevronRight className="w-5 h-5" />
+                        </Link>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+                      Aucun verset disponible
                     </p>
-                  </div>
+                  )}
                 </div>
-
-                <p className="text-2xl text-right font-amiri text-gray-800 dark:text-gray-200 mb-4 leading-loose">
-                  {currentVerse.arabic}
-                </p>
-
-                <p className="text-gray-700 dark:text-gray-300 italic mb-4">
-                  "{currentVerse.translation}"
-                </p>
-
-                <div className="flex justify-end">
-                  <Link to="/coran" className="text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors">
-                    <ChevronRight className="w-5 h-5" />
-                  </Link>
-                </div>
-              </div>
-            </motion.div>
-          </div>
+              </motion.div>
+            </div>
+          )}
         </motion.section>
 
         {/* Section statistiques */}
@@ -400,7 +407,7 @@ export const Home: React.FC = () => {
           </h2>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-            {siteStats.map((stat, index) => (
+            {siteStatsConfig.map((stat, index) => (
               <motion.div
                 key={stat.label}
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -411,25 +418,24 @@ export const Home: React.FC = () => {
               >
                 <Link to={stat.path}>
                   <div className="relative bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-emerald-200 dark:hover:border-emerald-700">
-                    {/* Gradient overlay on hover */}
                     <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300`} />
 
-                    {/* Icon */}
                     <div className={`w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br ${stat.color} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
                       <stat.icon className="w-7 h-7 text-white" />
                     </div>
 
-                    {/* Value */}
                     <div className="text-2xl font-bold text-gray-800 dark:text-white text-center mb-1 font-amiri">
-                      {stat.value}
+                      {isLoading ? (
+                        <Loader2 className="w-5 h-5 animate-spin mx-auto" />
+                      ) : (
+                        stat.value > 0 ? stat.value : '-'
+                      )}
                     </div>
 
-                    {/* Label */}
                     <div className="text-sm text-gray-500 dark:text-gray-400 text-center">
                       {stat.label}
                     </div>
 
-                    {/* Arrow indicator */}
                     <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                       <ChevronRight className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                     </div>
